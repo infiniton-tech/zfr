@@ -1,36 +1,110 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ZFR Fashion E-Commerce
+
+> Inspired by [LEFTIES](https://www.lefties.com/ae/) — a clean, editorial fashion e-commerce experience.
+
+## Tech Stack
+
+- **Frontend**: Next.js 15 (App Router) + React 19 + TypeScript
+- **Backend**: Next.js API Routes
+- **Database**: MongoDB with Mongoose ODM
+- **Styling**: Tailwind CSS + shadcn/ui
+- **State**: Zustand (client) + TanStack Query (server)
+- **Auth**: NextAuth.js (credentials)
+
+## Features
+
+### Pages
+- **Homepage** — Full-screen hero sections, Trending Now grid, #INZFR community
+- **Gender Landing** — Woman, Man, Kids category overview
+- **Product Listing** — Filter chips, product grid with pagination
+- **Product Detail** — Image gallery, color/size selectors, Add to Cart
+- **Cart** — Full cart management with quantities
+- **Checkout** — Multi-step checkout flow
+- **Search** — Live search with trending suggestions
+- **Auth** — Login, Register, Forgot Password
+- **Account** — Profile, Orders, Addresses, Wishlist
+- **Admin** — Basic dashboard
+
+### Backend APIs
+- `GET /api/v1/products` — List with filters, pagination
+- `GET /api/v1/products/:slug` — Single product
+- `GET /api/v1/categories` — Category tree
+- `GET /api/v1/categories/:slug` — Category with subcategories
+- `GET /api/v1/hero-sections` — Active hero sections
+- `GET /api/v1/looks` — Community looks
+- `GET /api/v1/search` — Product search
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- Node.js 20+
+- npm
+
+### Installation
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Development (with in-memory MongoDB)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run dev:start
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This will:
+1. Start MongoDB Memory Server
+2. Seed the database with sample data
+3. Start Next.js dev server on http://localhost:3000
 
-## Learn More
+### Seed Database Only
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run seed
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Requires `MONGODB_URI` environment variable.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Build
 
-## Deploy on Vercel
+```bash
+npm run build
+npm start
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project Structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+├── app/              # Next.js App Router pages
+├── components/       # React components
+│   ├── ui/          # shadcn/ui primitives
+│   ├── layout/      # Header, Footer, Sidebar
+│   ├── home/        # Hero, Trending, Community
+│   ├── product/     # ProductCard, AddToCart, WishlistButton
+│   ├── cart/        # Cart components
+│   └── shared/      # SearchModal, etc.
+├── lib/             # Utilities, DB connection
+├── models/          # Mongoose schemas
+├── modules/         # Backend modules (layered architecture)
+├── hooks/           # Custom React hooks
+├── store/           # Zustand stores (cart, wishlist)
+└── types/           # Shared TypeScript types
+```
+
+## Environment Variables
+
+```env
+MONGODB_URI=mongodb://localhost:27017/zfr-ecommerce
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your-secret-key
+```
+
+## Demo Data
+
+The seed script creates:
+- 50+ products across Woman, Man, and Kids
+- Full category tree with subcategories
+- 6 hero sections (2 per gender)
+- 12 community looks for #INZFR
+- 1 admin user (admin@zfr.com / admin123)
