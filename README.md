@@ -108,3 +108,4 @@ The seed script creates:
 - 6 hero sections (2 per gender)
 - 12 community looks for #INZFR
 - 1 admin user (admin@zfr.com / admin123)
+# zfr
