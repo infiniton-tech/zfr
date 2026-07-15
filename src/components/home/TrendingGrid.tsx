@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useLayoutEffect, useState, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { normalizeHref } from "@/lib/utils";
 
@@ -35,13 +35,26 @@ const FALLBACK_CATEGORIES: TrendingCategory[] = [
   },
 ];
 
+const TRENDING_SEEN_KEY = "zfr_trending_now_seen";
+
 export function TrendingGrid({ initialCategories }: { initialCategories?: TrendingCategory[] }) {
   const [categories, setCategories] = useState<TrendingCategory[]>(initialCategories || []);
-  
+
   // Animation states
   const [hasTriggered, setHasTriggered] = useState(false);
   const [fadeOut, setFadeOut] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  // Once the intro animation has played this browser session, never replay it
+  const playedRef = useRef(false);
+
+  // Runs before paint so a repeat homepage visit within the same session
+  // never flashes the black overlay again.
+  useLayoutEffect(() => {
+    if (typeof window !== "undefined" && sessionStorage.getItem(TRENDING_SEEN_KEY)) {
+      playedRef.current = true;
+      setFadeOut(true);
+    }
+  }, []);
 
   // Slider controls
   const sliderRef = useRef<HTMLDivElement>(null);
@@ -82,11 +95,15 @@ export function TrendingGrid({ initialCategories }: { initialCategories?: Trendi
 
     const observer = new IntersectionObserver(
       ([entry]) => {
+        if (playedRef.current) return; // already shown once this session
+
         if (entry.isIntersecting) {
           // Play animation and fade out
           setHasTriggered(true);
           fadeTimer = setTimeout(() => {
             setFadeOut(true);
+            playedRef.current = true;
+            sessionStorage.setItem(TRENDING_SEEN_KEY, "1");
           }, 1200);
         } else {
           // Reset states when leaving viewport so it triggers again next time

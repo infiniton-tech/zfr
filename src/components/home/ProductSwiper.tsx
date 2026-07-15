@@ -68,7 +68,7 @@ export function ProductSwiper({ products }: ProductSwiperProps) {
 
   return (
     <section className="py-16 md:py-20 bg-neutral-50/50 border-t border-b border-border/40">
-      <div className="max-w-7xl mx-auto px-4 md:px-12">
+      <div className="w-full px-4 md:px-12">
         {/* Section Header */}
         <div className="flex items-end justify-between mb-8">
           <div className="space-y-2">

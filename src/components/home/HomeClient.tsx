@@ -124,10 +124,7 @@ export function HomeClient({ heroes, trending, position, products }: HomeClientP
         {/* Hero auto slider (same backend data as desktop heroes) */}
         <HeroSlider heroes={heroes} compact />
 
-        {/* Trending between hero and products (admin position setting) */}
-        {trendingBelowHero && <TrendingGrid initialCategories={trending} />}
-
-        {/* Category Pills/Tabs (from backend categories) */}
+        {/* Category Pills/Tabs (from backend categories) — product section always right after the hero */}
         {tabs.length > 0 && (
           <div className="py-6 px-4 flex flex-col items-center gap-3">
             <div className="relative flex items-center gap-2 max-w-full w-full">
@@ -233,7 +230,7 @@ export function HomeClient({ heroes, trending, position, products }: HomeClientP
 
         {/* Trending + Community (same backend sections as desktop) */}
         <div className="mt-10">
-          {trendingBelowProducts && <TrendingGrid initialCategories={trending} />}
+          {(trendingBelowHero || trendingBelowProducts) && <TrendingGrid initialCategories={trending} />}
           <CommunitySection />
         </div>
 
@@ -245,12 +242,10 @@ export function HomeClient({ heroes, trending, position, products }: HomeClientP
 
         <HeroSlider heroes={heroes} />
 
-        {trendingBelowHero && <TrendingGrid initialCategories={trending} />}
-
-        {/* All products carousel slider (image, name, price) */}
+        {/* All products carousel slider (image, name, price) — always right after the hero, full width */}
         <ProductSwiper products={products} />
 
-        {trendingBelowProducts && <TrendingGrid initialCategories={trending} />}
+        {(trendingBelowHero || trendingBelowProducts) && <TrendingGrid initialCategories={trending} />}
 
         <CommunitySection />
       </div>
