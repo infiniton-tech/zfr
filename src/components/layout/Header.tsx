@@ -19,6 +19,7 @@ interface NavItem {
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
+  const [forceUpdate, setForceUpdate] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [navItems, setNavItems] = useState<any[]>([]);
@@ -31,6 +32,8 @@ export function Header() {
   const activeGender = ["woman", "man", "kids"].includes(pathSegments[0]) ? pathSegments[0] : null;
 
   useEffect(() => {
+    // Force re-render after hydration to fix transparent navbar on home page
+    setForceUpdate((n) => n + 1);
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
