@@ -52,7 +52,7 @@ export function WelcomeSplash({ preloadImages }: WelcomeSplashProps) {
     >
       <div className="text-center space-y-4 px-6 select-none">
         <h1 className="animate-tracking-in-expand">
-          <Logo className="h-16 md:h-24 mx-auto" />
+          <img src="/logoo.png" alt="ZFR" className="h-16 md:h-24 mx-auto invert" />
         </h1>
         <div className="h-[1px] w-12 bg-white/40 mx-auto" />
         <p className="text-xs md:text-sm font-light tracking-[0.4em] uppercase text-neutral-400">

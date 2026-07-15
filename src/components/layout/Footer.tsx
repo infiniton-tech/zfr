@@ -1,157 +1,141 @@
 "use client";
 
 import Link from "next/link";
-import { Globe, ArrowRight } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+import { ArrowRight } from "lucide-react";
+import { Logo } from "@/components/shared/Logo";
 
-const FOOTER_LINKS = {
-  help: [
-    { label: "HOW TO SHOP ONLINE", href: "#" },
-    { label: "PAYMENT", href: "#" },
-    { label: "DELIVERY", href: "#" },
-    { label: "EXCHANGES AND RETURNS", href: "#" },
-    { label: "SIZE GUIDE", href: "#" },
-    { label: "E-TICKET", href: "#" },
-  ],
-  customerService: [
-    { label: "STATUS OF YOUR ORDER", href: "#" },
-    { label: "FIND YOUR RECEIPT", href: "#" },
-    { label: "FREQUENTLY ASKED QUESTIONS", href: "#" },
-    { label: "CONTACT", href: "#" },
-  ],
-  company: [
-    { label: "ABOUT US", href: "#" },
-    { label: "STORES", href: "#" },
-    { label: "WORK WITH US", href: "#" },
-  ],
-  payment: [
-    { label: "VISA", href: "#" },
-    { label: "MASTERCARD", href: "#" },
-    { label: "COD", href: "#" },
-    { label: "AMEX", href: "#" },
-  ],
-  social: [
-    { label: "INSTAGRAM", href: "#" },
-    { label: "TIKTOK", href: "#" },
-    { label: "FACEBOOK", href: "#" },
-    { label: "X", href: "#" },
-    { label: "PINTEREST", href: "#" },
-    { label: "YOUTUBE", href: "#" },
-    { label: "SPOTIFY", href: "#" },
-  ],
-};
+const FOOTER_LINKS = [
+  { label: "How to Shop", href: "#" },
+  { label: "Payment", href: "#" },
+  { label: "Delivery", href: "#" },
+  { label: "Returns", href: "#" },
+  { label: "Size Guide", href: "#" },
+];
+
+const LEGAL_LINKS = [
+  { label: "Privacy Policy", href: "#" },
+  { label: "Terms of Use", href: "#" },
+  { label: "Cookies", href: "#" },
+];
 
 export function Footer() {
   return (
-    <footer className="bg-white border-t border-border">
-      <div className="px-6 md:px-12 py-12 md:py-16">
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-8">
-          {/* Help */}
-          <div>
-            <h3 className="text-xs font-medium tracking-wider mb-4">HELP</h3>
-            <ul className="space-y-2.5">
-              {FOOTER_LINKS.help.map((link) => (
-                <li key={link.label}>
-                  <Link href={link.href} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Customer Service */}
-          <div>
-            <h3 className="text-xs font-medium tracking-wider mb-4">CUSTOMER SERVICE</h3>
-            <ul className="space-y-2.5">
-              {FOOTER_LINKS.customerService.map((link) => (
-                <li key={link.label}>
-                  <Link href={link.href} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Company */}
-          <div>
-            <h3 className="text-xs font-medium tracking-wider mb-4">COMPANY</h3>
-            <ul className="space-y-2.5">
-              {FOOTER_LINKS.company.map((link) => (
-                <li key={link.label}>
-                  <Link href={link.href} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Payment Methods */}
-          <div>
-            <h3 className="text-xs font-medium tracking-wider mb-4">PAYMENT METHODS</h3>
-            <ul className="space-y-2.5">
-              {FOOTER_LINKS.payment.map((link) => (
-                <li key={link.label}>
-                  <span className="text-xs text-muted-foreground">{link.label}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Social */}
-          <div>
-            <h3 className="text-xs font-medium tracking-wider mb-4">SOCIAL</h3>
-            <ul className="space-y-2.5">
-              {FOOTER_LINKS.social.map((link) => (
-                <li key={link.label}>
-                  <Link href={link.href} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Newsletter */}
-          <div>
-            <h3 className="text-xs font-medium tracking-wider mb-2">Newsletter :-)</h3>
-            <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
-              Subscribe to our newsletter and don&apos;t miss out on the latest news, access to exclusive promotions and much more!
-            </p>
-            <div className="relative">
-              <input
-                type="email"
-                placeholder="E-mail"
-                className="w-full text-xs border-b border-border pb-2 pr-8 bg-transparent focus:outline-none focus:border-foreground transition-colors placeholder:text-muted-foreground"
-              />
-              <button className="absolute right-0 bottom-2 hover:opacity-70" aria-label="Subscribe">
-                <ArrowRight className="w-4 h-4" />
-              </button>
+    <footer className="bg-neutral-950 text-white">
+      {/* Main Footer */}
+      <div className="px-6 md:px-12 py-14 md:py-20">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8">
+            {/* Brand Column */}
+            <div className="md:col-span-5 flex flex-col gap-6">
+              <Link href="/" aria-label="ZFR home">
+                <Logo className="h-6 text-white" />
+              </Link>
+              <p className="text-sm text-neutral-400 leading-relaxed max-w-sm">
+                Contemporary fashion for the modern individual. Designed in Bangladesh, worn worldwide.
+              </p>
+              {/* Social Icons */}
+              <div className="flex items-center gap-4 pt-2">
+                <a
+                  href="#"
+                  aria-label="Instagram"
+                  className="w-9 h-9 rounded-full border border-neutral-700 flex items-center justify-center text-neutral-400 hover:text-white hover:border-white transition-all duration-300"
+                >
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+                  </svg>
+                </a>
+                <a
+                  href="#"
+                  aria-label="Facebook"
+                  className="w-9 h-9 rounded-full border border-neutral-700 flex items-center justify-center text-neutral-400 hover:text-white hover:border-white transition-all duration-300"
+                >
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                  </svg>
+                </a>
+                <a
+                  href="#"
+                  aria-label="YouTube"
+                  className="w-9 h-9 rounded-full border border-neutral-700 flex items-center justify-center text-neutral-400 hover:text-white hover:border-white transition-all duration-300"
+                >
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                  </svg>
+                </a>
+              </div>
             </div>
-            <Link href="#" className="text-xs text-muted-foreground underline mt-3 inline-block hover:text-foreground">
-              Unsubscribe
-            </Link>
+
+            {/* Links Column */}
+            <div className="md:col-span-3 md:col-start-7">
+              <h3 className="text-[11px] font-medium tracking-[0.15em] uppercase text-neutral-500 mb-5">
+                Help
+              </h3>
+              <ul className="space-y-3">
+                {FOOTER_LINKS.map((link) => (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="text-sm text-neutral-300 hover:text-white transition-colors duration-200"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Newsletter Column */}
+            <div className="md:col-span-4">
+              <h3 className="text-[11px] font-medium tracking-[0.15em] uppercase text-neutral-500 mb-5">
+                Newsletter
+              </h3>
+              <p className="text-sm text-neutral-400 mb-4 leading-relaxed">
+                Subscribe for exclusive drops, early access to sales, and style inspiration.
+              </p>
+              <form
+                className="flex items-center gap-0"
+                onSubmit={(e) => e.preventDefault()}
+              >
+                <input
+                  type="email"
+                  placeholder="Your email"
+                  className="flex-1 bg-transparent border-b border-neutral-700 pb-2.5 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-white transition-colors"
+                />
+                <button
+                  type="submit"
+                  aria-label="Subscribe"
+                  className="pb-2.5 text-neutral-400 hover:text-white transition-colors"
+                >
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       </div>
 
-      <Separator />
-
       {/* Bottom Bar */}
-      <div className="px-6 md:px-12 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-4 text-[10px] text-muted-foreground tracking-wider">
-          <Link href="#" className="hover:text-foreground transition-colors">PURCHASE CONDITIONS</Link>
-          <Link href="#" className="hover:text-foreground transition-colors">PRIVACY POLICY</Link>
-          <Link href="#" className="hover:text-foreground transition-colors">COOKIES POLICY</Link>
-          <Link href="#" className="hover:text-foreground transition-colors">COOKIES SETTINGS</Link>
-        </div>
-        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-          <Globe className="w-3 h-3" />
-          <span>BANGLADESH</span>
-          <span className="mx-1">|</span>
-          <span>ENGLISH</span>
+      <div className="border-t border-neutral-800">
+        <div className="px-6 md:px-12 py-5">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-[11px] text-neutral-500 tracking-wide">
+              &copy; {new Date().getFullYear()} ZFR. All rights reserved.
+            </p>
+            <div className="flex items-center gap-5">
+              {LEGAL_LINKS.map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className="text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors tracking-wide"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+            <p className="text-[11px] text-neutral-500 tracking-wide">
+              Bangladesh
+            </p>
+          </div>
         </div>
       </div>
     </footer>

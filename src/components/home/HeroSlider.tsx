@@ -61,7 +61,7 @@ export function HeroSlider({ heroes, compact = false, intervalMs = 5000 }: HeroS
 
   return (
     <div
-      className={`relative w-full overflow-hidden ${compact ? "aspect-[3/2] bg-neutral-100" : "h-screen"}`}
+      className={`relative w-full overflow-hidden ${compact ? "aspect-[3/4] bg-neutral-100" : "h-screen"}`}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onTouchStart={handleTouchStart}

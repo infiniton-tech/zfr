@@ -103,7 +103,7 @@ export function Header() {
 
           {/* Center: Logo */}
           <Link href="/" className="flex items-center justify-center" aria-label="ZFR home">
-            <img src="/logo-black.png" alt="ZFR" className="h-8 w-auto" />
+            <img src="/logoo.png" alt="ZFR" className="h-12 w-auto" />
           </Link>
 
           {/* Right: Hamburger Menu (opens SidebarNav sheet) */}
@@ -145,9 +145,9 @@ export function Header() {
           <Link href="/" className="absolute left-1/2 -translate-x-1/2" aria-label="ZFR home">
             <h1>
               <img
-                src={isTransparent ? "/logo-white.png" : "/logo-black.png"}
+                src="/logoo.png"
                 alt="ZFR"
-                className="h-10 w-auto"
+                className="h-14 w-auto"
               />
             </h1>
           </Link>
