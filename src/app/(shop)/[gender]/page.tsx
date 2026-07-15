@@ -122,7 +122,7 @@ const GENDER_FALLBACK: Record<string, Array<Record<string, string>>> = {
 
 export default async function GenderPage({ params }: { params: Promise<{ gender: string }> }) {
   return (
-    <div className="pb-16 bg-white">
+    <div className="pt-[56px] pb-16 bg-white">
       <Suspense fallback={
         <div className="relative aspect-[16/9] md:aspect-[21/9] w-full bg-neutral-100 animate-pulse flex items-center justify-center">
           <div className="text-center space-y-3">
