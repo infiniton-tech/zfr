@@ -103,7 +103,7 @@ export function Header() {
 
           {/* Center: Logo */}
           <Link href="/" className="flex items-center justify-center" aria-label="ZFR home">
-            <img src="/logoo.png" alt="ZFR" className="h-12 w-auto" />
+            <img src="/logoo.png" alt="ZFR" className="h-14 w-auto" />
           </Link>
 
           {/* Right: Hamburger Menu (opens SidebarNav sheet) */}
@@ -147,7 +147,7 @@ export function Header() {
               <img
                 src="/logoo.png"
                 alt="ZFR"
-                className="h-14 w-auto"
+                className="h-16 w-auto"
               />
             </h1>
           </Link>

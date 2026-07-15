@@ -28,7 +28,7 @@ export function Footer() {
             {/* Brand Column */}
             <div className="md:col-span-5 flex flex-col gap-6">
               <Link href="/" aria-label="ZFR home">
-                <Logo className="h-6 text-white" />
+                <img src="/logoo.png" alt="ZFR" className="h-8 w-auto invert" />
               </Link>
               <p className="text-sm text-neutral-400 leading-relaxed max-w-sm">
                 Contemporary fashion for the modern individual. Designed in Bangladesh, worn worldwide.
