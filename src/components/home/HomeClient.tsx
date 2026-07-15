@@ -47,11 +47,11 @@ export function HomeClient({ heroes, trending, position, products }: HomeClientP
   const tabsRef = useRef<HTMLDivElement>(null);
   const [showScrollHint, setShowScrollHint] = useState(true);
 
-  // Fetch all categories from backend
+  // Fetch all categories from backend (including subcategories)
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch("/api/v1/categories");
+        const res = await fetch("/api/v1/categories?all=true");
         const json = await res.json();
         const categories = json.data || [];
         const mapped = categories.map((cat: any) => ({
