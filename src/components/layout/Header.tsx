@@ -92,7 +92,7 @@ export function Header() {
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isTransparent
             ? "bg-transparent text-white border-none shadow-none"
-            : "bg-white/95 backdrop-blur-sm text-black shadow-sm border-b border-neutral-100"
+            : "bg-white text-black shadow-sm border-b border-neutral-100"
         }`}
       >
         {/* Mobile Header Layout */}
