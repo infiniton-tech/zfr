@@ -27,7 +27,7 @@ export default function AddressesPage() {
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [zip, setZip] = useState("");
-  const [country, setCountry] = useState("United Arab Emirates");
+  const [country, setCountry] = useState("Bangladesh");
   const [isDefault, setIsDefault] = useState(false);
 
   const fetchAddresses = async () => {
@@ -74,7 +74,7 @@ export default function AddressesPage() {
         setCity("");
         setState("");
         setZip("");
-        setCountry("United Arab Emirates");
+        setCountry("Bangladesh");
         setIsDefault(false);
         fetchAddresses();
       } else {

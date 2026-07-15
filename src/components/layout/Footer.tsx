@@ -149,7 +149,7 @@ export function Footer() {
         </div>
         <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
           <Globe className="w-3 h-3" />
-          <span>UNITED ARAB EMIRATES</span>
+          <span>BANGLADESH</span>
           <span className="mx-1">|</span>
           <span>ENGLISH</span>
         </div>

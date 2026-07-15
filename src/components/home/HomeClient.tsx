@@ -116,7 +116,7 @@ export function HomeClient({ heroes, trending, position, products }: HomeClientP
   return (
     <>
       {/* MOBILE HOME PAGE (md:hidden) */}
-      <div className="block md:hidden pt-[56px] bg-white min-h-screen pb-20">
+      <div className="block md:hidden pt-[60px] bg-white min-h-screen pb-20">
 
         {/* Trending above hero (admin position setting) */}
         {trendingAboveHero && <TrendingGrid initialCategories={trending} />}
