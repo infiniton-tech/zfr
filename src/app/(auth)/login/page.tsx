@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Logo } from "@/components/shared/Logo";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Input } from "@/components/ui/input";
@@ -39,8 +40,8 @@ export default function LoginPage() {
     <div className="min-h-screen bg-white flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-10">
-          <Link href="/" className="text-2xl font-bold tracking-[0.3em] uppercase">
-            ZFR
+          <Link href="/" aria-label="ZFR home">
+            <Logo className="h-8 mx-auto" />
           </Link>
           <h1 className="text-lg font-medium mt-6 tracking-wide">LOG IN</h1>
           <p className="text-sm text-muted-foreground mt-2">Welcome back! Please log in to your account.</p>

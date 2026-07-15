@@ -2,6 +2,7 @@ import { CategoryProductList } from "@/components/shop/CategoryProductList";
 import { connectDB } from "@/lib/db";
 import { Product, Category } from "@/models";
 import { Suspense } from "react";
+import { connection } from "next/server";
 
 export const unstable_instant = {
   prefetch: "runtime",
@@ -12,8 +13,9 @@ export const unstable_instant = {
 
 async function getProducts(gender: string, category: string) {
   try {
+    await connection();
     await connectDB();
-    const query: Record<string, any> = { isActive: true };
+    const query: Record<string, any> = {};
     if (gender) query.gender = gender;
 
     let finalQuery = query;
@@ -41,11 +43,28 @@ async function getProducts(gender: string, category: string) {
   }
 }
 
-async function getCategory(slug: string) {
+async function getCategoryData(slug: string) {
   try {
+    await connection();
     await connectDB();
     const cat = await Category.findOne({ slug }).lean();
-    return cat ? JSON.parse(JSON.stringify(cat)) : null;
+    if (!cat) return null;
+
+    let relatedCategories = [];
+    if (!cat.parentId) {
+      relatedCategories = await Category.find({ parentId: cat._id, isActive: true })
+        .sort({ sortOrder: 1 })
+        .lean();
+    } else {
+      relatedCategories = await Category.find({ parentId: cat.parentId, isActive: true })
+        .sort({ sortOrder: 1 })
+        .lean();
+    }
+
+    return {
+      category: JSON.parse(JSON.stringify(cat)),
+      relatedCategories: JSON.parse(JSON.stringify(relatedCategories)),
+    };
   } catch {
     return null;
   }
@@ -80,9 +99,10 @@ export default async function ProductListingPage({
 
 async function ProductListingWrapper({ gender, category }: { gender: string; category: string }) {
   const { data: products, meta } = await getProducts(gender, category);
-  const catData = await getCategory(category);
+  const catData = await getCategoryData(category);
 
-  const categoryName = catData?.name || category.replace(/-/g, " ").toUpperCase();
+  const categoryName = catData?.category?.name || category.replace(/-/g, " ").toUpperCase();
+  const relatedCategories = catData?.relatedCategories || [];
 
   return (
     <CategoryProductList
@@ -91,6 +111,7 @@ async function ProductListingWrapper({ gender, category }: { gender: string; cat
       category={category}
       categoryName={categoryName}
       total={meta.total}
+      relatedCategories={relatedCategories}
     />
   );
 }

@@ -21,6 +21,7 @@ import {
 import { Pencil, Trash2, Plus, Search } from "lucide-react";
 import Image from "next/image";
 import { ImageUploadManager } from "@/components/admin/ImageUploadManager";
+import { formatPrice } from "@/lib/utils";
 
 interface Product {
   _id: string;
@@ -46,6 +47,47 @@ interface Category {
   slug: string;
   parentId: string | null;
   gender: string;
+}
+
+const COLOR_MAP: Record<string, string> = {
+  black: "#000000",
+  white: "#FFFFFF",
+  red: "#FF0000",
+  blue: "#0000FF",
+  green: "#008000",
+  yellow: "#FFFF00",
+  pink: "#FFC0CB",
+  grey: "#808080",
+  gray: "#808080",
+  navy: "#000080",
+  orange: "#FFA500",
+  brown: "#A52A2A",
+  beige: "#F5F5DC",
+  gold: "#FFD700",
+  silver: "#C0C0C0",
+  purple: "#800080",
+  khaki: "#F0E68C",
+  olive: "#808000",
+  maroon: "#800000",
+  charcoal: "#36454F",
+  cream: "#FFFDD0",
+  tan: "#D2B48C",
+  mustard: "#FFDB58",
+  burgundy: "#800020",
+  lavender: "#E6E6FA",
+  peach: "#FFDAB9",
+  mint: "#98FF98",
+  teal: "#008080",
+  turquoise: "#40E0D0",
+  coral: "#FF7F50",
+  sand: "#C2B280",
+};
+
+function getColorHex(name: string): string {
+  const cleanName = name.toLowerCase().trim();
+  const hexMatch = cleanName.match(/#(?:[0-9a-fA-F]{3}){1,2}\b/);
+  if (hexMatch) return hexMatch[0];
+  return COLOR_MAP[cleanName] || "#888888";
 }
 
 export default function AdminProductsPage() {
@@ -104,7 +146,7 @@ export default function AdminProductsPage() {
   const handleSubmit = async () => {
     const images = form.images;
     const sizes = form.sizes.split(",").map((s) => s.trim()).filter(Boolean).map((name) => ({ name, inStock: true }));
-    const colors = form.colors.split(",").map((s) => s.trim()).filter(Boolean).map((name) => ({ name, hex: "#000000" }));
+    const colors = form.colors.split(",").map((s) => s.trim()).filter(Boolean).map((name) => ({ name, hex: getColorHex(name) }));
 
     const body = {
       name: form.name,
@@ -400,10 +442,10 @@ export default function AdminProductsPage() {
                           )}
                           <h4 className="text-[11px] font-medium tracking-wide truncate">{form.name || "Product Name"}</h4>
                           <div className="flex items-center gap-1.5">
-                            <span className="text-[11px] font-semibold">{(parseFloat(form.price) || 0).toFixed(2)} AED</span>
+                            <span className="text-[11px] font-semibold">{formatPrice(parseFloat(form.price) || 0)}</span>
                             {form.compareAtPrice && (
                               <span className="text-[9px] text-muted-foreground line-through">
-                                {(parseFloat(form.compareAtPrice) || 0).toFixed(2)} AED
+                                {formatPrice(parseFloat(form.compareAtPrice) || 0)}
                               </span>
                             )}
                           </div>
@@ -441,10 +483,10 @@ export default function AdminProductsPage() {
                             <span className="text-[8px] tracking-[0.2em] font-medium uppercase opacity-75 block">{form.gender} section</span>
                             <h4 className="text-sm font-medium tracking-wide leading-tight">{form.name || "Product Name"}</h4>
                             <div className="flex items-baseline gap-2">
-                              <span className="text-sm font-semibold">{(parseFloat(form.price) || 0).toFixed(2)} AED</span>
+                              <span className="text-sm font-semibold">{formatPrice(parseFloat(form.price) || 0)}</span>
                               {form.compareAtPrice && (
                                 <span className="text-xs text-muted-foreground line-through">
-                                  {(parseFloat(form.compareAtPrice) || 0).toFixed(2)} AED
+                                  {formatPrice(parseFloat(form.compareAtPrice) || 0)}
                                 </span>
                               )}
                             </div>
@@ -525,7 +567,7 @@ export default function AdminProductsPage() {
                     </div>
                   </TableCell>
                   <TableCell className="font-medium max-w-xs truncate">{p.name}</TableCell>
-                  <TableCell>${p.price}{p.compareAtPrice ? <span className="text-muted-foreground line-through ml-2 text-xs">${p.compareAtPrice}</span> : null}</TableCell>
+                  <TableCell>{formatPrice(p.price)}{p.compareAtPrice ? <span className="text-muted-foreground line-through ml-2 text-xs">{formatPrice(p.compareAtPrice)}</span> : null}</TableCell>
                   <TableCell className="capitalize">{p.gender}</TableCell>
                   <TableCell>{p.stockQuantity}</TableCell>
                   <TableCell>

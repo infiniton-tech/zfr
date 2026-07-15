@@ -9,7 +9,7 @@ function getSessionToken(req: NextRequest): string | undefined {
     || req.cookies.get("__Secure-next-auth.session-token")?.value;
 }
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { nextUrl } = req;
   const token = getSessionToken(req);
   const isLoggedIn = !!token;

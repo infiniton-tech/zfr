@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { ChevronLeft, Check, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { getVisitorId } from "@/lib/tracker";
+import { formatPrice } from "@/lib/utils";
 
 const STEPS = ["Shipping", "Payment", "Review"];
 
@@ -46,10 +47,11 @@ export default function CheckoutPage() {
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [zip, setZip] = useState("");
-  const [country, setCountry] = useState("United Arab Emirates");
+  const [country, setCountry] = useState("Bangladesh");
   const [saveAddress, setSaveAddress] = useState(false);
 
   // Payment form state
+  const [paymentMethod, setPaymentMethod] = useState<"cod" | "online" | "card">("card");
   const [cardNumber, setCardNumber] = useState("");
   const [cardExpiry, setCardExpiry] = useState("");
   const [cardCvv, setCardCvv] = useState("");
@@ -107,7 +109,7 @@ export default function CheckoutPage() {
       setCity("");
       setState("");
       setZip("");
-      setCountry("United Arab Emirates");
+      setCountry("Bangladesh");
     } else {
       const addr = savedAddresses.find((a) => a._id === id);
       if (addr) {
@@ -131,9 +133,11 @@ export default function CheckoutPage() {
 
   const handlePaymentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!cardNumber || !cardExpiry || !cardCvv || !cardName) {
-      toast.error("Please fill in all payment details");
-      return;
+    if (paymentMethod === "card") {
+      if (!cardNumber || !cardExpiry || !cardCvv || !cardName) {
+        toast.error("Please fill in all card details");
+        return;
+      }
     }
     setStep(2);
   };
@@ -181,6 +185,7 @@ export default function CheckoutPage() {
         discountAmount: 0,
         finalAmount: total,
         visitorId,
+        paymentMethod,
       };
 
       const res = await fetch("/api/v1/orders", {
@@ -321,7 +326,7 @@ export default function CheckoutPage() {
                 
                 <div className="space-y-2">
                   <Label className="text-xs tracking-wider">PHONE</Label>
-                  <Input className="rounded-none" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+971 XX XXX XXXX" required />
+                  <Input className="rounded-none" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+880 1XXX XXXXXX" required />
                 </div>
                 
                 <div className="space-y-2">
@@ -329,10 +334,14 @@ export default function CheckoutPage() {
                   <Input className="rounded-none" value={street} onChange={(e) => setStreet(e.target.value)} required disabled={selectedAddressId !== "new" && selectedAddressId !== ""} />
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs tracking-wider">CITY</Label>
                     <Input className="rounded-none" value={city} onChange={(e) => setCity(e.target.value)} required disabled={selectedAddressId !== "new" && selectedAddressId !== ""} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs tracking-wider">STATE / REGION</Label>
+                    <Input className="rounded-none" value={state} onChange={(e) => setState(e.target.value)} required disabled={selectedAddressId !== "new" && selectedAddressId !== ""} />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs tracking-wider">ZIP CODE</Label>
@@ -367,42 +376,92 @@ export default function CheckoutPage() {
             {step === 1 && (
               <form className="space-y-5" onSubmit={handlePaymentSubmit}>
                 <h2 className="text-sm font-medium tracking-wide">PAYMENT METHOD</h2>
-                <div className="border border-border p-4 mb-4">
-                  <div className="flex items-center gap-3 mb-4">
-                    <input type="radio" name="payment" id="card" defaultChecked className="w-4 h-4" />
-                    <Label htmlFor="card" className="text-sm">Credit / Debit Card</Label>
+                
+                <div className="space-y-3">
+                  {/* Credit / Debit Card */}
+                  <div className="border border-border p-4">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        checked={paymentMethod === "card"}
+                        onChange={() => setPaymentMethod("card")}
+                        className="w-4 h-4 accent-black"
+                      />
+                      <span className="text-sm font-semibold">Credit / Debit Card</span>
+                    </label>
+                    {paymentMethod === "card" && (
+                      <div className="space-y-3 pl-7 mt-4">
+                        <Input
+                          placeholder="Card number"
+                          className="rounded-none"
+                          value={cardNumber}
+                          onChange={(e) => setCardNumber(e.target.value)}
+                          required
+                        />
+                        <div className="grid grid-cols-2 gap-3">
+                          <Input
+                            placeholder="MM/YY"
+                            className="rounded-none"
+                            value={cardExpiry}
+                            onChange={(e) => setCardExpiry(e.target.value)}
+                            required
+                          />
+                          <Input
+                            placeholder="CVV"
+                            className="rounded-none"
+                            value={cardCvv}
+                            onChange={(e) => setCardCvv(e.target.value)}
+                            required
+                          />
+                        </div>
+                        <Input
+                          placeholder="Name on card"
+                          className="rounded-none"
+                          value={cardName}
+                          onChange={(e) => setCardName(e.target.value)}
+                          required
+                        />
+                      </div>
+                    )}
                   </div>
-                  <div className="space-y-3 pl-7">
-                    <Input
-                      placeholder="Card number"
-                      className="rounded-none"
-                      value={cardNumber}
-                      onChange={(e) => setCardNumber(e.target.value)}
-                      required
-                    />
-                    <div className="grid grid-cols-2 gap-3">
-                      <Input
-                        placeholder="MM/YY"
-                        className="rounded-none"
-                        value={cardExpiry}
-                        onChange={(e) => setCardExpiry(e.target.value)}
-                        required
+
+                  {/* Online Payment */}
+                  <div className="border border-border p-4">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        checked={paymentMethod === "online"}
+                        onChange={() => setPaymentMethod("online")}
+                        className="w-4 h-4 accent-black"
                       />
-                      <Input
-                        placeholder="CVV"
-                        className="rounded-none"
-                        value={cardCvv}
-                        onChange={(e) => setCardCvv(e.target.value)}
-                        required
+                      <span className="text-sm font-semibold">Online Payment (Apple Pay, Google Pay, PayPal)</span>
+                    </label>
+                    {paymentMethod === "online" && (
+                      <div className="pl-7 mt-2 text-xs text-muted-foreground leading-relaxed">
+                        Securely complete your transaction using digital wallet or PayPal on the next screen.
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Cash on Delivery */}
+                  <div className="border border-border p-4">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        checked={paymentMethod === "cod"}
+                        onChange={() => setPaymentMethod("cod")}
+                        className="w-4 h-4 accent-black"
                       />
-                    </div>
-                    <Input
-                      placeholder="Name on card"
-                      className="rounded-none"
-                      value={cardName}
-                      onChange={(e) => setCardName(e.target.value)}
-                      required
-                    />
+                      <span className="text-sm font-semibold">Cash on Delivery (COD)</span>
+                    </label>
+                    {paymentMethod === "cod" && (
+                      <div className="pl-7 mt-2 text-xs text-muted-foreground leading-relaxed">
+                        Pay in cash when the courier delivers your package. Please keep precise change ready.
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="flex gap-3">
@@ -423,7 +482,7 @@ export default function CheckoutPage() {
                   {items.map((item) => (
                     <div key={item.productId} className="flex justify-between text-sm">
                       <span>{item.name} x {item.quantity}</span>
-                      <span>{(item.price * item.quantity).toFixed(2)} AED</span>
+                      <span>{formatPrice(item.price * item.quantity)}</span>
                     </div>
                   ))}
                 </div>
@@ -433,6 +492,14 @@ export default function CheckoutPage() {
                   <p>{street}, {city}, {state} {zip}</p>
                   <p>{country}</p>
                   <p>Phone: {phone}</p>
+                </div>
+                <div className="border border-border p-4 space-y-2 text-xs">
+                  <h3 className="font-semibold uppercase tracking-wider">Payment Method</h3>
+                  <p className="capitalize">
+                    {paymentMethod === "card" && "Credit / Debit Card"}
+                    {paymentMethod === "online" && "Online Payment (Apple Pay, Google Pay, PayPal)"}
+                    {paymentMethod === "cod" && "Cash on Delivery (COD)"}
+                  </p>
                 </div>
                 <div className="flex gap-3">
                   <button onClick={() => setStep(1)} className="flex-1 text-xs tracking-[0.2em] py-4 border border-border hover:border-foreground transition-colors">
@@ -456,7 +523,7 @@ export default function CheckoutPage() {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span>{total.toFixed(2)} AED</span>
+                <span>{formatPrice(total)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Shipping</span>
@@ -465,7 +532,7 @@ export default function CheckoutPage() {
             </div>
             <div className="flex justify-between text-sm font-semibold mt-4 pt-4 border-t border-border">
               <span>Total</span>
-              <span>{total.toFixed(2)} AED</span>
+              <span>{formatPrice(total)}</span>
             </div>
           </div>
         </div>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { normalizeHref } from "@/lib/utils";
 
 interface HeroSectionProps {
   title: string;
@@ -72,7 +73,7 @@ export function HeroSection({ title, subtitle, image, leftImage, rightImage, cta
           </p>
         )}
         <Link
-          href={ctaLink}
+          href={normalizeHref(ctaLink)}
           className="inline-block bg-white text-black text-xs font-medium tracking-[0.2em] px-8 py-3 hover:bg-black hover:text-white transition-colors duration-300"
         >
           {ctaText}

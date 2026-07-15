@@ -6,6 +6,16 @@ import { Product, TrackingEvent, Order } from "@/models";
 export async function GET(request: Request) {
   try {
     await connectDB();
+
+    // Listing all orders exposes customer PII — admin only
+    const session = await auth();
+    if (!session?.user || session.user.role !== "admin") {
+      return NextResponse.json(
+        { error: { code: "UNAUTHORIZED", message: "Admin access required" } },
+        { status: 403 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
@@ -43,7 +53,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { items, shippingAddress, billingAddress, totalAmount, shippingCost, discountAmount, finalAmount } = body;
+    const { items, shippingAddress, billingAddress, shippingCost, discountAmount, paymentMethod } = body;
 
     if (!items || items.length === 0 || !shippingAddress || !billingAddress) {
       return NextResponse.json(
@@ -52,8 +62,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // 2. Validate and deduct stock for each product (Inventory management)
+    // 2. Validate stock and reprice every item from the database —
+    // client-sent prices are display-only and never trusted
+    const pricedItems: Array<Record<string, unknown>> = [];
     for (const item of items) {
+      const quantity = Math.max(1, Math.floor(Number(item.quantity) || 1));
       const dbProduct = await Product.findById(item.productId);
       if (!dbProduct) {
         return NextResponse.json(
@@ -62,23 +75,41 @@ export async function POST(request: Request) {
         );
       }
 
-      if (dbProduct.stockQuantity < item.quantity) {
+      if (dbProduct.stockQuantity < quantity) {
         return NextResponse.json(
           {
             error: {
               code: "OUT_OF_STOCK",
-              message: `Insufficient stock for ${item.name}. Available: ${dbProduct.stockQuantity}`,
+              message: `Insufficient stock for ${dbProduct.name}. Available: ${dbProduct.stockQuantity}`,
             },
           },
           { status: 400 }
         );
       }
+
+      pricedItems.push({
+        productId: dbProduct._id,
+        name: dbProduct.name,
+        image: dbProduct.images?.[0] || item.image,
+        price: dbProduct.price,
+        quantity,
+        size: item.size,
+        color: item.color,
+      });
     }
 
+    const totalAmount = pricedItems.reduce(
+      (sum, i) => sum + (i.price as number) * (i.quantity as number),
+      0
+    );
+    const safeShipping = Math.max(0, Number(shippingCost) || 0);
+    const safeDiscount = Math.min(Math.max(0, Number(discountAmount) || 0), totalAmount);
+    const finalAmount = totalAmount + safeShipping - safeDiscount;
+
     // Deduct stock after validating all items
-    for (const item of items) {
+    for (const item of pricedItems) {
       await Product.findByIdAndUpdate(item.productId, {
-        $inc: { stockQuantity: -item.quantity },
+        $inc: { stockQuantity: -(item.quantity as number) },
       });
     }
 
@@ -91,15 +122,16 @@ export async function POST(request: Request) {
     const order = await Order.create({
       orderNumber,
       userId: session.user.id,
-      items,
+      items: pricedItems,
       shippingAddress,
       billingAddress,
       totalAmount,
-      shippingCost: shippingCost || 0,
-      discountAmount: discountAmount || 0,
+      shippingCost: safeShipping,
+      discountAmount: safeDiscount,
       finalAmount,
       status: "pending",
-      paymentStatus: "paid", // simulate payment complete
+      paymentMethod: paymentMethod || "card",
+      paymentStatus: paymentMethod === "cod" ? "pending" : "paid",
     });
 
     // 5. Track purchase event

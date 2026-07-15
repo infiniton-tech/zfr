@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useCart } from "@/store/cart";
 import { toast } from "sonner";
 
@@ -22,15 +23,16 @@ export function AddToCart({ product }: AddToCartProps) {
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
   const { addItem } = useCart();
+  const router = useRouter();
 
-  const handleAddToCart = () => {
+  const addProductToCart = () => {
     if (product.sizes && product.sizes.length > 0 && !selectedSize) {
       toast.error("Please select a size");
-      return;
+      return false;
     }
     if (product.colors && product.colors.length > 0 && !selectedColor) {
       toast.error("Please select a color");
-      return;
+      return false;
     }
 
     addItem({
@@ -42,7 +44,7 @@ export function AddToCart({ product }: AddToCartProps) {
       size: selectedSize || undefined,
       color: selectedColor || undefined,
     });
-    
+
     // Track cart add event
     trackEvent("cart_add", product._id, {
       name: product.name,
@@ -50,8 +52,20 @@ export function AddToCart({ product }: AddToCartProps) {
       color: selectedColor || undefined,
       price: product.price,
     });
-    
-    toast.success(`${product.name} added to cart`);
+
+    return true;
+  };
+
+  const handleAddToCart = () => {
+    if (addProductToCart()) {
+      toast.success(`${product.name} added to cart`);
+    }
+  };
+
+  const handleBuyNow = () => {
+    if (addProductToCart()) {
+      router.push("/checkout");
+    }
   };
 
   return (
@@ -101,14 +115,30 @@ export function AddToCart({ product }: AddToCartProps) {
         </div>
       )}
 
-      {/* Add to cart button */}
-      <button
-        onClick={handleAddToCart}
-        disabled={product.stockQuantity !== undefined && product.stockQuantity <= 0}
-        className="w-full bg-black text-white text-xs font-medium tracking-[0.2em] py-4 hover:bg-black/90 transition-colors disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed uppercase"
-      >
-        {product.stockQuantity !== undefined && product.stockQuantity <= 0 ? "Out of Stock" : "Add to Cart"}
-      </button>
+      {/* Add to cart / Buy now buttons */}
+      {product.stockQuantity !== undefined && product.stockQuantity <= 0 ? (
+        <button
+          disabled
+          className="w-full bg-gray-200 text-gray-400 text-xs font-medium tracking-[0.2em] py-4 cursor-not-allowed uppercase"
+        >
+          Out of Stock
+        </button>
+      ) : (
+        <div className="space-y-3">
+          <button
+            onClick={handleBuyNow}
+            className="w-full bg-black text-white text-xs font-medium tracking-[0.2em] py-4 hover:bg-black/90 transition-colors uppercase"
+          >
+            Buy Now
+          </button>
+          <button
+            onClick={handleAddToCart}
+            className="w-full border border-black text-black text-xs font-medium tracking-[0.2em] py-4 hover:bg-black hover:text-white transition-colors uppercase"
+          >
+            Add to Cart
+          </button>
+        </div>
+      )}
     </div>
   );
 }

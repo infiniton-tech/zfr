@@ -21,6 +21,8 @@ import {
 import { Pencil, Trash2, Plus, ImageIcon } from "lucide-react";
 import Image from "next/image";
 import { ImageUploadManager } from "@/components/admin/ImageUploadManager";
+import { LinkSelector } from "@/components/admin/LinkSelector";
+import { toast } from "sonner";
 
 interface HeroSection {
   _id: string;
@@ -71,27 +73,70 @@ export default function AdminHeroSectionsPage() {
   }, []);
 
   const handleSubmit = async () => {
+    if (!form.title.trim()) {
+      toast.error("Title is required");
+      return;
+    }
+    if (!form.ctaLink.trim()) {
+      toast.error("CTA Link is required");
+      return;
+    }
+
+    // Automatically use leftImage as base image fallback if base image is empty but leftImage is set
+    let baseImage = form.image;
+    if (!baseImage && form.leftImage) {
+      baseImage = form.leftImage;
+    }
+
+    if (!baseImage) {
+      toast.error("Base Image (or Left Image) is required");
+      return;
+    }
+
     const body = {
       ...form,
+      image: baseImage,
+      ctaText: form.ctaText.trim() || "VIEW NOW",
       sortOrder: parseInt(form.sortOrder) || 0,
     };
-    const res = await fetch(editing ? `/api/v1/hero-sections/${editing._id}` : "/api/v1/hero-sections", {
-      method: editing ? "PATCH" : "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    if (res.ok) {
-      setOpen(false);
-      setEditing(null);
-      resetForm();
-      fetchHeroes();
+
+    try {
+      const res = await fetch(editing ? `/api/v1/hero-sections/${editing._id}` : "/api/v1/hero-sections", {
+        method: editing ? "PATCH" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json();
+      if (res.ok) {
+        toast.success(editing ? "Hero section updated successfully" : "Hero section created successfully");
+        setOpen(false);
+        setEditing(null);
+        resetForm();
+        fetchHeroes();
+      } else {
+        toast.error(json.error?.message || (editing ? "Failed to update hero section" : "Failed to create hero section"));
+      }
+    } catch (error) {
+      console.error("Submit hero section error:", error);
+      toast.error("An unexpected error occurred");
     }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this hero section?")) return;
-    const res = await fetch(`/api/v1/hero-sections/${id}`, { method: "DELETE" });
-    if (res.ok) fetchHeroes();
+    try {
+      const res = await fetch(`/api/v1/hero-sections/${id}`, { method: "DELETE" });
+      const json = await res.json();
+      if (res.ok) {
+        toast.success("Hero section deleted successfully");
+        fetchHeroes();
+      } else {
+        toast.error(json.error?.message || "Failed to delete hero section");
+      }
+    } catch (error) {
+      console.error("Delete hero section error:", error);
+      toast.error("An unexpected error occurred");
+    }
   };
 
   const startEdit = (h: HeroSection) => {
@@ -208,7 +253,7 @@ export default function AdminHeroSectionsPage() {
                 </div>
                 <div className="grid gap-2">
                   <Label>CTA Link</Label>
-                  <Input value={form.ctaLink} onChange={(e) => setForm({ ...form, ctaLink: e.target.value })} />
+                  <LinkSelector value={form.ctaLink} onChange={(val) => setForm({ ...form, ctaLink: val })} />
                 </div>
               </div>
               <label className="flex items-center gap-2 text-sm cursor-pointer">

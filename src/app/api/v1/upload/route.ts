@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { cloudinary } from "@/lib/cloudinary";
+import { v2 as cloudinarySdk } from "cloudinary";
 import fs from "fs/promises";
 import path from "path";
 import crypto from "crypto";
@@ -52,10 +53,12 @@ export async function POST(request: Request) {
           secure_url: result.secure_url,
           public_id: result.public_id,
           publicId: result.public_id,
+          source: "cloudinary",
         },
       });
-    } catch (cloudinaryError: any) {
-      console.warn("Cloudinary upload failed or not configured, falling back to local file storage...", cloudinaryError?.message || cloudinaryError);
+    } catch (cloudinaryError: unknown) {
+      const cloudinaryMessage = cloudinaryError instanceof Error ? cloudinaryError.message : String(cloudinaryError);
+      console.warn("Cloudinary upload failed or not configured, falling back to local file storage...", cloudinaryMessage);
 
       // Fallback: Save file to public/uploads
       const uploadDir = path.join(process.cwd(), "public", "uploads");
@@ -83,10 +86,15 @@ export async function POST(request: Request) {
           secure_url: fileUrl,
           public_id: filename,
           publicId: filename,
+          source: "local",
+        },
+        warning: {
+          code: "LOCAL_FALLBACK",
+          message: "Cloudinary is not configured. File was saved locally and will not persist on serverless hosts.",
         },
       });
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Global upload handler failed:", error);
     return NextResponse.json(
       { error: { code: "INTERNAL_ERROR", message: "Upload failed" } },
@@ -98,7 +106,7 @@ export async function POST(request: Request) {
 export async function GET() {
   try {
     const timestamp = Math.round(new Date().getTime() / 1000);
-    const signature = require("cloudinary").v2.utils.api_sign_request(
+    const signature = cloudinarySdk.utils.api_sign_request(
       { timestamp, folder: "zfr-products" },
       process.env.CLOUDINARY_API_SECRET || "dummy_secret"
     );

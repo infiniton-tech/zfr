@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { formatPrice } from "@/lib/utils";
 
 interface Order {
   _id: string;
@@ -80,7 +81,7 @@ export default function OrdersPage() {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Amount</p>
-                  <p className="text-xs font-semibold">{order.finalAmount.toFixed(2)} AED</p>
+                  <p className="text-xs font-semibold">{formatPrice(order.finalAmount)}</p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground uppercase tracking-wider mb-0.5">Status</p>
@@ -104,7 +105,7 @@ export default function OrdersPage() {
                       <p className="text-xs mt-1">Qty: {item.quantity}</p>
                     </div>
                     <div className="text-xs font-medium shrink-0">
-                      {(item.price * item.quantity).toFixed(2)} AED
+                      {formatPrice(item.price * item.quantity)}
                     </div>
                   </div>
                 ))}

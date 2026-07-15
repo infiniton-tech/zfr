@@ -40,6 +40,9 @@ export async function POST(request: Request) {
     if (body.parentId === "") {
       body.parentId = null;
     }
+    if (body.slug) {
+      body.slug = body.slug.replace(/^\/+|\/+$/g, "").trim().toLowerCase();
+    }
     const category = await Category.create(body);
     return NextResponse.json({ data: category }, { status: 201 });
   } catch (error) {
@@ -47,3 +50,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: { code: "INTERNAL_ERROR", message: "Failed to create category" } }, { status: 500 });
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    await connectDB();
+    const { ids } = await request.json() as { ids: string[] };
+    if (!ids || ids.length === 0) {
+      return NextResponse.json({ error: { code: "VALIDATION_ERROR", message: "No IDs provided" } }, { status: 400 });
+    }
+    const result = await Category.deleteMany({ _id: { $in: ids } });
+    return NextResponse.json({ data: { deleted: result.deletedCount } });
+  } catch (error) {
+    console.error("DELETE Categories error:", error);
+    return NextResponse.json({ error: { code: "INTERNAL_ERROR", message: "Failed to delete categories" } }, { status: 500 });
+  }
+}
+

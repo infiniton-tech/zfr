@@ -16,7 +16,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ identif
     if (!category) {
       return NextResponse.json({ error: { code: "NOT_FOUND", message: "Category not found" } }, { status: 404 });
     }
-    const subcategories = await Category.find({ parentId: category._id }).sort({ sortOrder: 1 }).lean();
+    const subcategories = await Category.find({ parentId: category._id, isActive: true }).sort({ sortOrder: 1 }).lean();
     return NextResponse.json({ data: { ...category, subcategories } });
   } catch {
     return NextResponse.json({ error: { code: "INTERNAL_ERROR", message: "Failed to fetch category" } }, { status: 500 });
@@ -33,6 +33,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ identi
     const body = await req.json();
     if (body.parentId === "") {
       body.parentId = null;
+    }
+    if (body.slug) {
+      body.slug = body.slug.replace(/^\/+|\/+$/g, "").trim().toLowerCase();
     }
     const category = await Category.findByIdAndUpdate(identifier, { $set: body }, { new: true }).lean();
     if (!category) return NextResponse.json({ error: { code: "NOT_FOUND", message: "Category not found" } }, { status: 404 });

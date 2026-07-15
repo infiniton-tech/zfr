@@ -12,6 +12,8 @@ import {
   Truck,
   ImageIcon,
   Menu,
+  Heart,
+  TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +22,8 @@ const navItems = [
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/categories", label: "Categories", icon: ListTree },
   { href: "/admin/hero-sections", label: "Hero Sections", icon: ImageIcon },
+  { href: "/admin/trending", label: "Trending Now", icon: TrendingUp },
+  { href: "/admin/looks", label: "#INZFR Looks", icon: Heart },
   { href: "/admin/nav-items", label: "Navigation", icon: Menu },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { href: "/admin/users", label: "Users", icon: Users },

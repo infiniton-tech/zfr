@@ -37,6 +37,7 @@ const OrderSchema = new Schema<IOrderDocument>(
     billingAddress: { type: AddressSchema, required: true },
     status: { type: String, enum: ["pending", "processing", "shipped", "delivered", "cancelled"], default: "pending" },
     paymentStatus: { type: String, enum: ["pending", "paid", "failed", "refunded"], default: "pending" },
+    paymentMethod: { type: String, enum: ["cod", "online", "card"], default: "card" },
     totalAmount: { type: Number, required: true },
     shippingCost: { type: Number, default: 0 },
     discountAmount: { type: Number, default: 0 },

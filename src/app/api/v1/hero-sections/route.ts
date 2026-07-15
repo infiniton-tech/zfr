@@ -12,7 +12,8 @@ export async function GET(request: Request) {
 
     const sections = await HeroSection.find(query).sort({ sortOrder: 1 }).lean();
     return NextResponse.json({ data: sections });
-  } catch {
+  } catch (error) {
+    console.error("GET Hero Sections error:", error);
     return NextResponse.json({ error: { code: "INTERNAL_ERROR", message: "Failed to fetch hero sections" } }, { status: 500 });
   }
 }
@@ -23,7 +24,8 @@ export async function POST(request: Request) {
     const body = await request.json();
     const section = await HeroSection.create(body);
     return NextResponse.json({ data: section }, { status: 201 });
-  } catch {
+  } catch (error) {
+    console.error("POST Hero Sections error:", error);
     return NextResponse.json({ error: { code: "INTERNAL_ERROR", message: "Failed to create hero section" } }, { status: 500 });
   }
 }

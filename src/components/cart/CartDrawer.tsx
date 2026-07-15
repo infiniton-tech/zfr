@@ -1,23 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Minus, Plus, Trash2, ShoppingBag, X } from "lucide-react";
 import { useCart } from "@/store/cart";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { formatPrice } from "@/lib/utils";
 
 export function CartDrawer() {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { items, updateQuantity, removeItem, getTotalPrice, getTotalItems } = useCart();
   const total = getTotalPrice();
   const count = getTotalItems();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger className="p-1 hover:opacity-70 transition-opacity relative" aria-label="Cart">
         <ShoppingBag className="w-5 h-5" />
-        {count > 0 && (
+        {mounted && count > 0 && (
           <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-black text-white text-[9px] font-bold flex items-center justify-center rounded-full">
             {count}
           </span>
@@ -54,7 +60,7 @@ export function CartDrawer() {
                       <p className="text-[10px] text-muted-foreground mt-0.5">
                         {item.color && `${item.color} / `}{item.size && `Size ${item.size}`}
                       </p>
-                      <p className="text-xs font-semibold mt-1">{item.price.toFixed(2)} AED</p>
+                      <p className="text-xs font-semibold mt-1">{formatPrice(item.price)}</p>
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center border border-border">
@@ -87,7 +93,7 @@ export function CartDrawer() {
             <div className="border-t border-border p-6 space-y-4">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span className="font-semibold">{total.toFixed(2)} AED</span>
+                <span className="font-semibold">{formatPrice(total)}</span>
               </div>
               <Link
                 href="/checkout"

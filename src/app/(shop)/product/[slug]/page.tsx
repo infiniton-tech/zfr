@@ -8,6 +8,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { connectDB } from "@/lib/db";
 import { Product } from "@/models";
 import { Suspense } from "react";
+import { connection } from "next/server";
 
 export const unstable_instant = {
   prefetch: "runtime",
@@ -18,6 +19,7 @@ export const unstable_instant = {
 
 async function getProduct(slug: string) {
   try {
+    await connection();
     await connectDB();
     const product = await Product.findOne({ slug }).lean();
     return product ? JSON.parse(JSON.stringify(product)) : null;
@@ -28,6 +30,7 @@ async function getProduct(slug: string) {
 
 async function getRelatedProducts(gender: string, excludeSlug: string) {
   try {
+    await connection();
     await connectDB();
     const products = await Product.find({ gender, slug: { $ne: excludeSlug } })
       .limit(4)
@@ -88,6 +91,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
 import { TrackProductView } from "@/components/product/TrackProductView";
 import { ProductReviews } from "@/components/product/ProductReviews";
+import { formatPrice } from "@/lib/utils";
 
 async function ProductPageWrapper({ slug }: { slug: string }) {
   const product = await getProduct(slug);
@@ -137,10 +141,10 @@ async function ProductPageWrapper({ slug }: { slug: string }) {
           <div className="md:pt-4">
             <h1 className="text-lg md:text-xl font-medium tracking-wide mb-2">{product.name}</h1>
             <div className="flex items-center gap-3 mb-6">
-              <span className="text-lg font-semibold">{product.price.toFixed(2)} AED</span>
+              <span className="text-lg font-semibold">{formatPrice(product.price)}</span>
               {product.compareAtPrice && (
                 <span className="text-sm text-muted-foreground line-through">
-                  {product.compareAtPrice.toFixed(2)} AED
+                  {formatPrice(product.compareAtPrice)}
                 </span>
               )}
             </div>
@@ -175,7 +179,7 @@ async function ProductPageWrapper({ slug }: { slug: string }) {
               <AccordionItem value="shipping">
                 <AccordionTrigger className="text-xs tracking-wider">SHIPPING & RETURNS</AccordionTrigger>
                 <AccordionContent className="text-sm text-muted-foreground">
-                  Free standard shipping on orders over 200 AED. Returns accepted within 30 days.
+                  Free standard shipping on orders over ৳2,000. Returns accepted within 30 days.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="size">
@@ -193,7 +197,7 @@ async function ProductPageWrapper({ slug }: { slug: string }) {
             <div className="flex items-center gap-6 mt-8 pt-6 border-t border-border">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Truck className="w-4 h-4" />
-                <span>Free shipping over 200 AED</span>
+                <span>Free shipping over ৳2,000</span>
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <RotateCcw className="w-4 h-4" />

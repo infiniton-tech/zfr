@@ -19,6 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Pencil, Trash2, Plus } from "lucide-react";
+import { LinkSelector } from "@/components/admin/LinkSelector";
 
 interface NavItem {
   _id: string;
@@ -128,7 +129,7 @@ export default function AdminNavItemsPage() {
               </div>
               <div className="grid gap-2">
                 <Label>URL (href) *</Label>
-                <Input value={form.href} onChange={(e) => setForm({ ...form, href: e.target.value })} placeholder="e.g. /woman" />
+                <LinkSelector value={form.href} onChange={(val) => setForm({ ...form, href: val })} placeholder="e.g. /woman" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">

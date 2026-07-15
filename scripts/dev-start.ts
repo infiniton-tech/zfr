@@ -3,7 +3,10 @@ import { spawn } from "child_process";
 
 async function main() {
   console.log("Starting MongoDB Memory Server...");
-  const mongod = await MongoMemoryServer.create();
+  // Disk-backed storage: keeps data out of RAM on low-memory machines
+  const mongod = await MongoMemoryServer.create({
+    instance: { storageEngine: "wiredTiger" },
+  });
   const uri = mongod.getUri() + "zfr-ecommerce";
   console.log("MongoDB running at:", uri);
 
@@ -23,7 +26,11 @@ async function main() {
   console.log("Starting Next.js dev server...");
   const nextDev = spawn("npx", ["next", "dev"], {
     stdio: "inherit",
-    env: { ...process.env, MONGODB_URI: uri },
+    env: {
+      ...process.env,
+      MONGODB_URI: uri,
+      NODE_OPTIONS: "--max-old-space-size=2048",
+    },
   });
 
   nextDev.on("close", (code) => {

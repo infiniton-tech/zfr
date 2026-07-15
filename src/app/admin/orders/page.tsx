@@ -13,6 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Eye, Edit3, Check } from "lucide-react";
 import { toast } from "sonner";
+import { formatPrice } from "@/lib/utils";
 
 interface Order {
   _id: string;
@@ -111,7 +112,7 @@ export default function AdminOrdersPage() {
                       {o.items?.map((item) => `${item.name} (x${item.quantity})`).join(", ") || "—"}
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm font-semibold">{o.finalAmount?.toFixed(2)} AED</TableCell>
+                  <TableCell className="text-sm font-semibold">{formatPrice(o.finalAmount ?? 0)}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className={statusColors[o.status] || "bg-gray-100 text-gray-800"}>
                       {o.status.toUpperCase()}

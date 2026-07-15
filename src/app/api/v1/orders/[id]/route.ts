@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
-import { Order } from "@/models";
+import { Order, Product } from "@/models";
 import { auth } from "@/lib/auth";
 
 export async function PATCH(
@@ -26,18 +26,33 @@ export async function PATCH(
     if (status) updateFields.status = status;
     if (paymentStatus) updateFields.paymentStatus = paymentStatus;
 
-    const order = await Order.findByIdAndUpdate(
-      id,
-      { $set: updateFields },
-      { new: true }
-    ).populate("userId", "name email").lean();
-
-    if (!order) {
+    const existing = await Order.findById(id);
+    if (!existing) {
       return NextResponse.json(
         { error: { code: "NOT_FOUND", message: "Order not found" } },
         { status: 404 }
       );
     }
+
+    // Keep inventory in sync when an order crosses the cancelled boundary
+    if (status && status !== existing.status) {
+      const restock = status === "cancelled" && existing.status !== "cancelled";
+      const rededuct = status !== "cancelled" && existing.status === "cancelled";
+      if (restock || rededuct) {
+        const sign = restock ? 1 : -1;
+        for (const item of existing.items) {
+          await Product.findByIdAndUpdate(item.productId, {
+            $inc: { stockQuantity: sign * item.quantity },
+          });
+        }
+      }
+    }
+
+    const order = await Order.findByIdAndUpdate(
+      id,
+      { $set: updateFields },
+      { new: true }
+    ).populate("userId", "name email").lean();
 
     return NextResponse.json({ data: order });
   } catch (error) {

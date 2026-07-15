@@ -6,6 +6,7 @@ import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import { useCart } from "@/store/cart";
 import { useRouter } from "next/navigation";
 import { trackEvent } from "@/lib/tracker";
+import { formatPrice } from "@/lib/utils";
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, getTotalPrice } = useCart();
@@ -55,7 +56,7 @@ export default function CartPage() {
                     <p className="text-xs text-muted-foreground mt-1">
                       {item.color && `${item.color} / `}{item.size && `Size ${item.size}`}
                     </p>
-                    <p className="text-sm font-semibold mt-2">{item.price.toFixed(2)} AED</p>
+                    <p className="text-sm font-semibold mt-2">{formatPrice(item.price)}</p>
                   </div>
                   <div className="flex items-center justify-between mt-4">
                     <div className="flex items-center border border-border">
@@ -94,7 +95,7 @@ export default function CartPage() {
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span>{getTotalPrice().toFixed(2)} AED</span>
+                <span>{formatPrice(getTotalPrice())}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Shipping</span>
@@ -103,7 +104,7 @@ export default function CartPage() {
             </div>
             <div className="flex justify-between text-sm font-semibold mt-4 pt-4 border-t border-border">
               <span>Total</span>
-              <span>{getTotalPrice().toFixed(2)} AED</span>
+              <span>{formatPrice(getTotalPrice())}</span>
             </div>
             <button
               onClick={handleCheckout}

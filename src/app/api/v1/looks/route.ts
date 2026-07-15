@@ -18,3 +18,20 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: { code: "INTERNAL_ERROR", message: "Failed to fetch looks" } }, { status: 500 });
   }
 }
+
+export async function POST(request: Request) {
+  try {
+    await connectDB();
+    const body = await request.json();
+    const { image, userName, caption, instagramHandle, isFeatured } = body;
+
+    if (!image) {
+      return NextResponse.json({ error: { code: "VALIDATION_ERROR", message: "Image URL is required" } }, { status: 400 });
+    }
+
+    const look = await Look.create({ image, userName, caption, instagramHandle, isFeatured: isFeatured ?? false, approved: true });
+    return NextResponse.json({ data: look }, { status: 201 });
+  } catch {
+    return NextResponse.json({ error: { code: "INTERNAL_ERROR", message: "Failed to create look" } }, { status: 500 });
+  }
+}

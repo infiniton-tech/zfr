@@ -133,6 +133,7 @@ export interface IOrder {
   billingAddress: IAddress;
   status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
   paymentStatus: "pending" | "paid" | "failed" | "refunded";
+  paymentMethod: "cod" | "online" | "card";
   totalAmount: number;
   shippingCost: number;
   discountAmount: number;

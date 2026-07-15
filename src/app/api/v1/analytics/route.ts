@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
+import { unstable_noStore } from "next/cache";
 import { connectDB } from "@/lib/db";
 import { TrackingEvent, User, Product, Order } from "@/models";
 import { auth } from "@/lib/auth";
 
 export async function GET() {
+  unstable_noStore();
   try {
     await connectDB();
     const session = await auth();

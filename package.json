@@ -3,12 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "NODE_OPTIONS=--max-old-space-size=2048 next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "seed": "tsx scripts/seed.ts",
-    "dev:start": "tsx scripts/dev-start.ts",
+    "dev:offline": "tsx scripts/dev-start.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

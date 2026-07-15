@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Heart } from "lucide-react";
 import { useWishlist } from "@/store/wishlist";
-import { cn } from "@/lib/utils";
+import { cn, formatPrice } from "@/lib/utils";
 
 interface ProductCardProps {
   product: {
@@ -79,10 +79,10 @@ export function ProductCard({ product }: ProductCardProps) {
 
         <h3 className="text-xs font-medium tracking-wide truncate">{product.name}</h3>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold">{product.price.toFixed(2)} AED</span>
+          <span className="text-xs font-semibold">{formatPrice(product.price)}</span>
           {product.compareAtPrice && (
             <span className="text-xs text-muted-foreground line-through">
-              {product.compareAtPrice.toFixed(2)} AED
+              {formatPrice(product.compareAtPrice)}
             </span>
           )}
         </div>

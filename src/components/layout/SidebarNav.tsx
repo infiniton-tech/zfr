@@ -9,13 +9,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 interface SidebarNavProps {
   onClose: () => void;
 }
-
-const GENDERS = [
-  { label: "WOMAN", value: "woman" },
-  { label: "MAN", value: "man" },
-  { label: "KIDS", value: "kids" },
-];
-
 interface Category {
   _id: string;
   name: string;
@@ -25,34 +18,50 @@ interface Category {
   sortOrder: number;
 }
 
-const STATIC_LINKS: Record<string, Array<{ name: string; slug: string; isRed?: boolean }>> = {
-  woman: [
-    { name: "NEW IN", slug: "woman/new-in" },
-    { name: "SPECIAL OCCASIONS", slug: "woman/special-occasions" },
-    { name: "DENIM", slug: "woman/denim" },
-    { name: "SWIMWEAR | BIKINIS", slug: "woman/swimwear-bikinis" },
-    { name: "SEASONAL BASICS", slug: "woman/seasonal-basics" },
-    { name: "PROMOTION", slug: "woman/promotion", isRed: true },
-    { name: "#INZFR", slug: "looks" },
-  ],
-  man: [
-    { name: "NEW IN", slug: "man/new-in" },
-    { name: "DENIM", slug: "man/denim" },
-    { name: "PROMOTION", slug: "man/promotion", isRed: true },
-  ],
-  kids: [
-    { name: "NEW IN", slug: "kids/new-in" },
-    { name: "PROMOTION", slug: "kids/promotion", isRed: true },
-  ],
-};
-
 export function SidebarNav({ onClose }: SidebarNavProps) {
+  const [genders, setGenders] = useState<Array<{ label: string; value: string }>>([]);
   const [activeGender, setActiveGender] = useState<string>("woman");
   const [subMenuOpen, setSubMenuOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<Category | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [subcategories, setSubcategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchGenders() {
+      try {
+        const res = await fetch("/api/v1/nav-items?position=header-main");
+        const json = await res.json();
+        const items = json.data || [];
+        if (items.length > 0) {
+          const mapped = items.map((item: any) => ({
+            label: item.label.toUpperCase(),
+            value: item.href.replace(/^\//, ""),
+          }));
+          setGenders(mapped);
+          if (mapped.length > 0) {
+            setActiveGender(mapped[0].value);
+          }
+        } else {
+          const catRes = await fetch("/api/v1/categories");
+          const catJson = await catRes.json();
+          const categories = catJson.data || [];
+          const uniqueGenders = Array.from(new Set(categories.map((c: any) => c.gender))) as string[];
+          const mapped = uniqueGenders.map((gender) => ({
+            label: gender.toUpperCase(),
+            value: gender,
+          }));
+          setGenders(mapped);
+          if (mapped.length > 0) {
+            setActiveGender(mapped[0].value);
+          }
+        }
+      } catch {
+        setGenders([]);
+      }
+    }
+    fetchGenders();
+  }, []);
 
   useEffect(() => {
     async function fetchCategories() {
@@ -66,7 +75,9 @@ export function SidebarNav({ onClose }: SidebarNavProps) {
         setLoading(false);
       }
     }
-    fetchCategories();
+    if (activeGender) {
+      fetchCategories();
+    }
   }, [activeGender]);
 
   const openSubmenu = async (category: Category) => {
@@ -93,7 +104,7 @@ export function SidebarNav({ onClose }: SidebarNavProps) {
           <X className="w-5 h-5" />
         </button>
         <div className="flex items-center gap-4 text-xs font-medium tracking-wider">
-          {GENDERS.map((g) => (
+          {genders.map((g) => (
             <button
               key={g.value}
               onClick={() => {
@@ -116,19 +127,6 @@ export function SidebarNav({ onClose }: SidebarNavProps) {
         <div className="relative">
           {/* Main Menu */}
           <nav className="py-2">
-            {STATIC_LINKS[activeGender]?.map((item) => (
-              <Link
-                key={item.slug}
-                href={`/${item.slug}`}
-                onClick={onClose}
-                className={`block px-6 py-3 text-sm tracking-wide hover:bg-muted/50 transition-colors ${
-                  item.isRed ? "text-red-600" : "text-foreground"
-                }`}
-              >
-                {item.name}
-              </Link>
-            ))}
-
             {loading ? (
               <div className="px-6 py-4 space-y-2">
                 {Array.from({ length: 4 }).map((_, i) => (

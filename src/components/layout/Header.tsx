@@ -9,6 +9,7 @@ import { SidebarNav } from "./SidebarNav";
 import { SearchModal } from "@/components/shared/SearchModal";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { Sheet, SheetTrigger } from "@/components/ui/sheet";
+import { normalizeHref } from "@/lib/utils";
 
 interface NavItem {
   _id: string;
@@ -20,14 +21,14 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [navItems, setNavItems] = useState<NavItem[]>([
-    { _id: "1", label: "Woman", href: "/woman" },
-    { _id: "2", label: "Man", href: "/man" },
-    { _id: "3", label: "Kids", href: "/kids" },
-  ]);
+  const [navItems, setNavItems] = useState<any[]>([]);
   const pathname = usePathname();
   const isHome = pathname === "/";
   const { data: session, status } = useSession();
+
+  // Extract gender from the first path segment if it matches one of the departments
+  const pathSegments = pathname.split("/").filter(Boolean);
+  const activeGender = ["woman", "man", "kids"].includes(pathSegments[0]) ? pathSegments[0] : null;
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -36,30 +37,47 @@ export function Header() {
   }, []);
 
   useEffect(() => {
-    const fetchNav = async () => {
-      try {
-        const res = await fetch("/api/v1/nav-items?position=header-main");
-        const json = await res.json();
-        const items = json.data || [];
-        if (items.length === 0) {
-          setNavItems([
-            { _id: "1", label: "Woman", href: "/woman" },
-            { _id: "2", label: "Man", href: "/man" },
-            { _id: "3", label: "Kids", href: "/kids" },
-          ]);
-        } else {
-          setNavItems(items);
+    const fetchNavItems = async () => {
+      if (activeGender) {
+        try {
+          const res = await fetch(`/api/v1/categories?gender=${activeGender}`);
+          const json = await res.json();
+          const categories = json.data || [];
+          const mapped = categories.map((cat: any) => ({
+            _id: cat._id,
+            label: cat.name,
+            href: `/${activeGender}/${cat.slug}`,
+          }));
+          setNavItems(mapped);
+        } catch {
+          setNavItems([]);
         }
-      } catch {
-        setNavItems([
-          { _id: "1", label: "Woman", href: "/woman" },
-          { _id: "2", label: "Man", href: "/man" },
-          { _id: "3", label: "Kids", href: "/kids" },
-        ]);
+      } else {
+        try {
+          const res = await fetch("/api/v1/nav-items?position=header-main");
+          const json = await res.json();
+          const items = json.data || [];
+          if (items.length > 0) {
+            setNavItems(items);
+          } else {
+            const catRes = await fetch("/api/v1/categories");
+            const catJson = await catRes.json();
+            const categories = catJson.data || [];
+            const genders = Array.from(new Set(categories.map((c: any) => c.gender))) as string[];
+            const mapped = genders.map((gender) => ({
+              _id: gender,
+              label: gender.charAt(0).toUpperCase() + gender.slice(1),
+              href: `/${gender}`,
+            }));
+            setNavItems(mapped);
+          }
+        } catch {
+          setNavItems([]);
+        }
       }
     };
-    fetchNav();
-  }, []);
+    fetchNavItems();
+  }, [activeGender]);
 
   const isTransparent = isHome && !scrolled;
 
@@ -68,11 +86,40 @@ export function Header() {
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isTransparent
-            ? "bg-transparent text-white"
-            : "bg-white/95 backdrop-blur-sm text-black shadow-sm"
+            ? "bg-white text-black border-b border-neutral-100 shadow-sm md:bg-transparent md:text-white md:border-none md:shadow-none"
+            : "bg-white/95 backdrop-blur-sm text-black shadow-sm border-b border-neutral-100 md:border-none"
         }`}
       >
-        <div className="flex items-center justify-between px-4 md:px-6 h-[56px]">
+        {/* Mobile Header Layout */}
+        <div className="flex md:hidden items-center justify-between px-4 h-[56px] w-full">
+          {/* Left: Search Trigger (icon in a circle container) */}
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="w-9 h-9 rounded-full bg-neutral-100 hover:bg-neutral-200 transition-colors flex items-center justify-center text-neutral-800 focus:outline-none"
+            aria-label="Search"
+          >
+            <Search className="w-4 h-4" />
+          </button>
+
+          {/* Center: Logo */}
+          <Link href="/" className="flex items-center justify-center" aria-label="ZFR home">
+            <img src="/logo-black.png" alt="ZFR" className="h-8 w-auto" />
+          </Link>
+
+          {/* Right: Hamburger Menu (opens SidebarNav sheet) */}
+          <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+            <SheetTrigger
+              className="p-2 text-neutral-800 hover:opacity-75 transition-opacity focus:outline-none"
+              aria-label="Open menu"
+            >
+              <Menu className="w-5 h-5" />
+            </SheetTrigger>
+            <SidebarNav onClose={() => setSidebarOpen(false)} />
+          </Sheet>
+        </div>
+
+        {/* Desktop Header Layout */}
+        <div className="hidden md:flex items-center justify-between px-6 h-[56px]">
           {/* Left: Hamburger + Nav */}
           <div className="flex items-center gap-4">
             <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
@@ -87,7 +134,7 @@ export function Header() {
 
             <nav className="hidden md:flex items-center gap-4 text-xs font-medium tracking-wider uppercase">
               {navItems.map((item) => (
-                <Link key={item._id} href={item.href} className="hover:opacity-70 transition-opacity">
+                <Link key={item._id} href={normalizeHref(item.href)} className="hover:opacity-70 transition-opacity">
                   {item.label}
                 </Link>
               ))}
@@ -95,8 +142,14 @@ export function Header() {
           </div>
 
           {/* Center: Logo */}
-          <Link href="/" className="absolute left-1/2 -translate-x-1/2">
-            <h1 className="text-xl font-bold tracking-[0.3em] uppercase">ZFR</h1>
+          <Link href="/" className="absolute left-1/2 -translate-x-1/2" aria-label="ZFR home">
+            <h1>
+              <img
+                src={isTransparent ? "/logo-white.png" : "/logo-black.png"}
+                alt="ZFR"
+                className="h-10 w-auto"
+              />
+            </h1>
           </Link>
 
           {/* Right: Icons */}
