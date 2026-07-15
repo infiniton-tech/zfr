@@ -107,13 +107,19 @@ export function Header() {
 
           {/* Center: Logo */}
           <Link href="/" className="flex items-center justify-center" aria-label="ZFR home">
-            <img src="/logoo.png" alt="ZFR" className={`h-14 w-auto transition-all duration-300 ${isTransparent ? "invert" : ""}`} />
+            <img 
+              src={isTransparent ? "/logo-white-new.png" : "/logoo.png"} 
+              alt="ZFR" 
+              className="h-14 w-auto transition-all duration-300" 
+            />
           </Link>
 
           {/* Right: Hamburger Menu (opens SidebarNav sheet) */}
           <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
             <SheetTrigger
-              className="p-2 text-neutral-800 hover:opacity-75 transition-opacity focus:outline-none"
+              className={`p-2 hover:opacity-75 transition-opacity focus:outline-none ${
+                isTransparent ? "text-white" : "text-neutral-800"
+              }`}
               aria-label="Open menu"
             >
               <Menu className="w-5 h-5" />
@@ -128,7 +134,9 @@ export function Header() {
           <div className="flex items-center gap-4">
             <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
               <SheetTrigger
-                className="p-1 hover:opacity-70 transition-opacity"
+                className={`p-1 hover:opacity-70 transition-opacity ${
+                  isTransparent ? "text-white" : "text-black"
+                }`}
                 aria-label="Open menu"
               >
                 <Menu className="w-5 h-5" />
@@ -136,7 +144,9 @@ export function Header() {
               <SidebarNav onClose={() => setSidebarOpen(false)} />
             </Sheet>
 
-            <nav className="hidden md:flex items-center gap-4 text-xs font-medium tracking-wider uppercase">
+            <nav className={`hidden md:flex items-center gap-4 text-xs font-medium tracking-wider uppercase ${
+              isTransparent ? "text-white" : "text-black"
+            }`}>
               {navItems.map((item) => (
                 <Link key={item._id} href={normalizeHref(item.href)} className="hover:opacity-70 transition-opacity">
                   {item.label}
@@ -149,15 +159,15 @@ export function Header() {
           <Link href="/" className="absolute left-1/2 -translate-x-1/2" aria-label="ZFR home">
             <h1>
               <img
-                src="/logoo.png"
+                src={isTransparent ? "/logo-white-new.png" : "/logoo.png"}
                 alt="ZFR"
-                className="h-16 w-auto"
+                className="h-16 w-auto transition-all duration-300"
               />
             </h1>
           </Link>
 
           {/* Right: Icons */}
-          <div className="flex items-center gap-3">
+          <div className={`flex items-center gap-3 ${isTransparent ? "text-white" : "text-black"}`}>
             <button onClick={() => setSearchOpen(true)} className="p-1 hover:opacity-70 transition-opacity" aria-label="Search">
               <Search className="w-5 h-5" />
             </button>
