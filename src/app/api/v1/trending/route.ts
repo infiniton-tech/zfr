@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
+import { auth } from "@/lib/auth";
 import { TrendingItem } from "@/models";
 
 export async function GET() {
@@ -16,6 +17,11 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const session = await auth();
+    if (!session?.user || session.user.role !== "admin") {
+      return NextResponse.json({ error: { code: "UNAUTHORIZED", message: "Admin access required" } }, { status: 403 });
+    }
+
     await connectDB();
     const body = await request.json();
     const { name, image, ctaLink, sortOrder, isActive } = body;

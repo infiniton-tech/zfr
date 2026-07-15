@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server";
 import { cloudinary } from "@/lib/cloudinary";
+import { auth } from "@/lib/auth";
 import fs from "fs/promises";
 import path from "path";
 
 export async function GET() {
+  const session = await auth();
+  if (!session?.user || session.user.role !== "admin") {
+    return NextResponse.json({ error: { code: "UNAUTHORIZED", message: "Admin access required" } }, { status: 403 });
+  }
+
   const results: { url: string; publicId: string; source: "cloudinary" | "local"; name: string; createdAt?: string }[] = [];
 
   // 1. Fetch all images from Cloudinary (user-uploaded only)
@@ -53,6 +59,11 @@ export async function GET() {
 
 export async function DELETE(request: Request) {
   try {
+    const session = await auth();
+    if (!session?.user || session.user.role !== "admin") {
+      return NextResponse.json({ error: { code: "UNAUTHORIZED", message: "Admin access required" } }, { status: 403 });
+    }
+
     const { publicId, source } = await request.json() as { publicId: string; source: "cloudinary" | "local" };
     if (!publicId) {
       return NextResponse.json({ error: { code: "VALIDATION_ERROR", message: "publicId is required" } }, { status: 400 });

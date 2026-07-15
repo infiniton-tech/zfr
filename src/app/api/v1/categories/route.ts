@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
+import { auth } from "@/lib/auth";
 import { Category } from "@/models";
 
 export async function GET(request: Request) {
@@ -35,6 +36,11 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const session = await auth();
+    if (!session?.user || session.user.role !== "admin") {
+      return NextResponse.json({ error: { code: "UNAUTHORIZED", message: "Admin access required" } }, { status: 403 });
+    }
+
     await connectDB();
     const body = await request.json();
     if (body.parentId === "") {
@@ -53,6 +59,11 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    const session = await auth();
+    if (!session?.user || session.user.role !== "admin") {
+      return NextResponse.json({ error: { code: "UNAUTHORIZED", message: "Admin access required" } }, { status: 403 });
+    }
+
     await connectDB();
     const { ids } = await request.json() as { ids: string[] };
     if (!ids || ids.length === 0) {

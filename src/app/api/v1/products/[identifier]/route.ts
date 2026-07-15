@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { connectDB } from "@/lib/db";
+import { auth } from "@/lib/auth";
 import { Product } from "@/models";
 
 function isObjectId(str: string) {
@@ -24,6 +25,11 @@ export async function GET(_req: Request, { params }: { params: Promise<{ identif
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ identifier: string }> }) {
   try {
+    const session = await auth();
+    if (!session?.user || session.user.role !== "admin") {
+      return NextResponse.json({ error: { code: "UNAUTHORIZED", message: "Admin access required" } }, { status: 403 });
+    }
+
     await connectDB();
     const { identifier } = await params;
     if (!isObjectId(identifier)) {
@@ -40,6 +46,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ identi
 
 export async function DELETE(_req: Request, { params }: { params: Promise<{ identifier: string }> }) {
   try {
+    const session = await auth();
+    if (!session?.user || session.user.role !== "admin") {
+      return NextResponse.json({ error: { code: "UNAUTHORIZED", message: "Admin access required" } }, { status: 403 });
+    }
+
     await connectDB();
     const { identifier } = await params;
     if (!isObjectId(identifier)) {

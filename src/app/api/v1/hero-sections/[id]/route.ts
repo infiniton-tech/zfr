@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
+import { auth } from "@/lib/auth";
 import { HeroSection } from "@/models";
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const session = await auth();
+    if (!session?.user || session.user.role !== "admin") {
+      return NextResponse.json({ error: { code: "UNAUTHORIZED", message: "Admin access required" } }, { status: 403 });
+    }
+
     await connectDB();
     const { id } = await params;
     const body = await req.json();
@@ -17,6 +23,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const session = await auth();
+    if (!session?.user || session.user.role !== "admin") {
+      return NextResponse.json({ error: { code: "UNAUTHORIZED", message: "Admin access required" } }, { status: 403 });
+    }
+
     await connectDB();
     const { id } = await params;
     await HeroSection.findByIdAndDelete(id);

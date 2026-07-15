@@ -1,12 +1,18 @@
 import { NextResponse } from "next/server";
 import { cloudinary } from "@/lib/cloudinary";
 import { v2 as cloudinarySdk } from "cloudinary";
+import { auth } from "@/lib/auth";
 import fs from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 
 export async function POST(request: Request) {
   try {
+    const session = await auth();
+    if (!session?.user || session.user.role !== "admin") {
+      return NextResponse.json({ error: { code: "UNAUTHORIZED", message: "Admin access required" } }, { status: 403 });
+    }
+
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
     const folder = (formData.get("folder") as string) || "zfr-products";
@@ -105,6 +111,11 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
+    const session = await auth();
+    if (!session?.user || session.user.role !== "admin") {
+      return NextResponse.json({ error: { code: "UNAUTHORIZED", message: "Admin access required" } }, { status: 403 });
+    }
+
     const timestamp = Math.round(new Date().getTime() / 1000);
     const signature = cloudinarySdk.utils.api_sign_request(
       { timestamp, folder: "zfr-products" },
