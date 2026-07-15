@@ -86,8 +86,8 @@ export function Header() {
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isTransparent
-            ? "bg-white text-black border-b border-neutral-100 shadow-sm md:bg-transparent md:text-white md:border-none md:shadow-none"
-            : "bg-white/95 backdrop-blur-sm text-black shadow-sm border-b border-neutral-100 md:border-none"
+            ? "bg-transparent text-white border-none shadow-none"
+            : "bg-white/95 backdrop-blur-sm text-black shadow-sm border-b border-neutral-100"
         }`}
       >
         {/* Mobile Header Layout */}
@@ -95,7 +95,11 @@ export function Header() {
           {/* Left: Search Trigger (icon in a circle container) */}
           <button
             onClick={() => setSearchOpen(true)}
-            className="w-9 h-9 rounded-full bg-neutral-100 hover:bg-neutral-200 transition-colors flex items-center justify-center text-neutral-800 focus:outline-none"
+            className={`w-9 h-9 rounded-full transition-colors flex items-center justify-center focus:outline-none ${
+              isTransparent
+                ? "bg-white/20 hover:bg-white/30 text-white"
+                : "bg-neutral-100 hover:bg-neutral-200 text-neutral-800"
+            }`}
             aria-label="Search"
           >
             <Search className="w-4 h-4" />
@@ -103,7 +107,7 @@ export function Header() {
 
           {/* Center: Logo */}
           <Link href="/" className="flex items-center justify-center" aria-label="ZFR home">
-            <img src="/logoo.png" alt="ZFR" className="h-14 w-auto" />
+            <img src="/logoo.png" alt="ZFR" className={`h-14 w-auto transition-all duration-300 ${isTransparent ? "invert" : ""}`} />
           </Link>
 
           {/* Right: Hamburger Menu (opens SidebarNav sheet) */}
