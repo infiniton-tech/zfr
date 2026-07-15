@@ -33,7 +33,9 @@ export function Header() {
 
   useEffect(() => {
     // Force re-render after hydration to fix transparent navbar on home page
-    setForceUpdate((n) => n + 1);
+    requestAnimationFrame(() => {
+      setForceUpdate((n) => n + 1);
+    });
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
