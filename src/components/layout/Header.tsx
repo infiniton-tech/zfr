@@ -19,6 +19,7 @@ interface NavItem {
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [navItems, setNavItems] = useState<any[]>([]);
@@ -31,7 +32,9 @@ export function Header() {
   const activeGender = ["woman", "man", "kids"].includes(pathSegments[0]) ? pathSegments[0] : null;
 
   useEffect(() => {
+    setMounted(true);
     const handleScroll = () => setScrolled(window.scrollY > 50);
+    handleScroll(); // Check initial scroll position
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -79,7 +82,7 @@ export function Header() {
     fetchNavItems();
   }, [activeGender]);
 
-  const isTransparent = isHome && !scrolled;
+  const isTransparent = mounted && isHome && !scrolled;
 
   return (
     <>
