@@ -87,8 +87,8 @@ export function HomeClient({ heroes, trending, position, products }: HomeClientP
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Use backend categories, fallback to product-derived
-  const tabs = allCategories.length > 0 ? allCategories : useMemo(() => {
+  // Derive tabs from product categories as fallback
+  const productTabs = useMemo(() => {
     const seen = new Map<string, CategoryInfo>();
     products.forEach((p) => {
       p.categories?.forEach((c) => {
@@ -97,6 +97,9 @@ export function HomeClient({ heroes, trending, position, products }: HomeClientP
     });
     return Array.from(seen.values());
   }, [products]);
+
+  // Use backend categories, fallback to product-derived
+  const tabs = allCategories.length > 0 ? allCategories : productTabs;
 
   const activeTab = tabs.find((t) => t.slug === activeSlug) ?? tabs[0] ?? null;
 
