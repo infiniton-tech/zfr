@@ -22,6 +22,7 @@ export function Header() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [navItems, setNavItems] = useState<any[]>([]);
+  const [isMobile, setIsMobile] = useState(false);
   const pathname = usePathname();
   const isHome = pathname === "/";
   const { data: session, status } = useSession();
@@ -34,6 +35,14 @@ export function Header() {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 767px)");
+    const handleChange = (e: MediaQueryListEvent | MediaQueryList) => setIsMobile(e.matches);
+    handleChange(mediaQuery);
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
   useEffect(() => {
@@ -79,14 +88,17 @@ export function Header() {
     fetchNavItems();
   }, [activeGender]);
 
-  const isTransparent = isHome && !scrolled;
+  // Background: transparent on home (always) + mobile (all pages) when not scrolled
+  const isTransparentBg = (isHome && !scrolled) || (isMobile && !scrolled);
+  // White text/logo: only on home page (hero provides dark background)
+  const useLightColors = isHome && !scrolled;
 
   return (
     <>
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isTransparent
-            ? "bg-transparent text-white border-none shadow-none"
+          isTransparentBg
+            ? `bg-transparent border-none shadow-none ${useLightColors ? "text-white" : "text-black"}`
             : "bg-white text-black shadow-sm border-b border-neutral-100"
         }`}
       >
@@ -96,9 +108,11 @@ export function Header() {
           <button
             onClick={() => setSearchOpen(true)}
             className={`w-9 h-9 rounded-full transition-colors flex items-center justify-center focus:outline-none ${
-              isTransparent
+              useLightColors
                 ? "bg-white/20 hover:bg-white/30 text-white"
-                : "bg-neutral-100 hover:bg-neutral-200 text-neutral-800"
+                : isTransparentBg
+                  ? "bg-black/10 hover:bg-black/20 text-neutral-800"
+                  : "bg-neutral-100 hover:bg-neutral-200 text-neutral-800"
             }`}
             aria-label="Search"
           >
@@ -108,7 +122,7 @@ export function Header() {
           {/* Center: Logo */}
           <Link href="/" className="flex items-center justify-center" aria-label="ZFR home">
             <img 
-              src={isTransparent ? "/logo-white-new.png" : "/logoo.png"} 
+              src={useLightColors ? "/logo-white-new.png" : "/logoo.png"} 
               alt="ZFR" 
               className="h-14 w-auto transition-all duration-300" 
             />
@@ -118,7 +132,7 @@ export function Header() {
           <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
             <SheetTrigger
               className={`p-2 hover:opacity-75 transition-opacity focus:outline-none ${
-                isTransparent ? "text-white" : "text-neutral-800"
+                useLightColors ? "text-white" : "text-neutral-800"
               }`}
               aria-label="Open menu"
             >
@@ -135,7 +149,7 @@ export function Header() {
             <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
               <SheetTrigger
                 className={`p-1 hover:opacity-70 transition-opacity ${
-                  isTransparent ? "text-white" : "text-black"
+                  useLightColors ? "text-white" : "text-black"
                 }`}
                 aria-label="Open menu"
               >
@@ -145,7 +159,7 @@ export function Header() {
             </Sheet>
 
             <nav className={`hidden md:flex items-center gap-4 text-xs font-medium tracking-wider uppercase ${
-              isTransparent ? "text-white" : "text-black"
+              useLightColors ? "text-white" : "text-black"
             }`}>
               {navItems.map((item) => (
                 <Link key={item._id} href={normalizeHref(item.href)} className="hover:opacity-70 transition-opacity">
@@ -159,7 +173,7 @@ export function Header() {
           <Link href="/" className="absolute left-1/2 -translate-x-1/2" aria-label="ZFR home">
             <h1>
               <img
-                src={isTransparent ? "/logo-white-new.png" : "/logoo.png"}
+                src={useLightColors ? "/logo-white-new.png" : "/logoo.png"}
                 alt="ZFR"
                 className="h-16 w-auto transition-all duration-300"
               />
@@ -167,7 +181,7 @@ export function Header() {
           </Link>
 
           {/* Right: Icons */}
-          <div className={`flex items-center gap-3 ${isTransparent ? "text-white" : "text-black"}`}>
+          <div className={`flex items-center gap-3 ${useLightColors ? "text-white" : "text-black"}`}>
             <button onClick={() => setSearchOpen(true)} className="p-1 hover:opacity-70 transition-opacity" aria-label="Search">
               <Search className="w-5 h-5" />
             </button>

@@ -217,7 +217,7 @@ export function HomeClient({ heroes, trending, position, products }: HomeClientP
   return (
     <>
       {/* MOBILE HOME PAGE */}
-      <div className="block md:hidden pt-[60px] bg-white min-h-screen pb-20">
+      <div className="block md:hidden bg-white min-h-screen pb-20">
         {trendingAboveHero && <TrendingGrid initialCategories={trending} />}
         <HeroSlider heroes={heroes} compact />
         <CategoryPills isMobile />
