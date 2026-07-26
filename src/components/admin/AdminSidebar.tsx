@@ -14,6 +14,7 @@ import {
   Menu,
   Heart,
   TrendingUp,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +30,7 @@ const navItems = [
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/media", label: "Media", icon: Image },
   { href: "/admin/parcel", label: "Parcel", icon: Truck },
+  { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
 export function AdminSidebar() {
