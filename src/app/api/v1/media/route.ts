@@ -10,12 +10,22 @@ export async function GET() {
     return NextResponse.json({ error: { code: "UNAUTHORIZED", message: "Admin access required" } }, { status: 403 });
   }
 
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+  const apiKey = process.env.CLOUDINARY_API_KEY;
+  const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+  const isCloudinaryConfigured = Boolean(
+    cloudName &&
+    cloudName !== "demo" &&
+    apiKey &&
+    apiSecret
+  );
+
   const results: { url: string; publicId: string; source: "cloudinary" | "local"; name: string; createdAt?: string }[] = [];
 
-  // 1. Fetch all images from Cloudinary (user-uploaded only)
-  try {
-    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-    if (cloudName && cloudName !== "demo") {
+  // 1. Fetch all images from Cloudinary if configured
+  if (isCloudinaryConfigured) {
+    try {
       const response = await cloudinary.api.resources({
         type: "upload",
         max_results: 500,
@@ -31,12 +41,12 @@ export async function GET() {
           createdAt: r.created_at,
         });
       }
+    } catch (err) {
+      console.warn("Could not list Cloudinary resources:", err);
     }
-  } catch (err) {
-    console.warn("Could not list Cloudinary resources:", err);
   }
 
-  // 2. Fetch from /public/uploads (local fallback when Cloudinary not configured)
+  // 2. Fetch from /public/uploads (local fallback when Cloudinary not configured or for local uploads)
   try {
     const uploadsDir = path.join(process.cwd(), "public", "uploads");
     const entries = await fs.readdir(uploadsDir, { withFileTypes: true }).catch(() => []);
@@ -54,7 +64,10 @@ export async function GET() {
     // ignore if dir doesn't exist
   }
 
-  return NextResponse.json({ data: results });
+  return NextResponse.json({
+    data: results,
+    cloudinaryConfigured: isCloudinaryConfigured,
+  });
 }
 
 export async function DELETE(request: Request) {

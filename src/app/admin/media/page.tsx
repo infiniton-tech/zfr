@@ -42,11 +42,7 @@ export default function AdminMediaPage() {
       const json = await res.json();
       const items: MediaItem[] = json.data || [];
       setMediaItems(items);
-      if (items.length === 0 || items.every((i) => i.source === "local")) {
-        setCloudinaryConfigured(false);
-      } else {
-        setCloudinaryConfigured(true);
-      }
+      setCloudinaryConfigured(Boolean(json.cloudinaryConfigured));
     } catch {
       toast.error("Failed to load media library");
     } finally {
