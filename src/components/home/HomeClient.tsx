@@ -134,11 +134,11 @@ export function HomeClient({ heroes, trending, position, products }: HomeClientP
 
   // Shared Category Pills Component
   const CategoryPills = ({ isMobile = false }: { isMobile?: boolean }) => (
-    <div className={`${isMobile ? "px-4" : "px-6 md:px-12"} py-6 flex flex-col items-center gap-3`}>
-      <div className="relative w-full max-w-full">
+    <div className={`${isMobile ? "px-4" : "px-6 md:px-12"} py-6 flex flex-col items-center justify-center gap-3 w-full`}>
+      <div className="relative w-full max-w-full flex justify-center">
         <div
           ref={isMobile ? tabsRef : undefined}
-          className="flex items-center justify-start gap-3 overflow-x-auto scrollbar-none scroll-smooth max-w-full pb-1"
+          className="flex items-center justify-center gap-3 overflow-x-auto scrollbar-none scroll-smooth max-w-full pb-1"
         >
           {tabs.map((tab) => {
             const isActive = activeTab?.slug === tab.slug;
