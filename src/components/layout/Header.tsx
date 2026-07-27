@@ -47,42 +47,47 @@ export function Header() {
 
   useEffect(() => {
     const fetchNavItems = async () => {
-      if (activeGender) {
-        try {
-          const res = await fetch(`/api/v1/categories?gender=${activeGender}`);
-          const json = await res.json();
-          const categories = json.data || [];
-          const mapped = categories.map((cat: any) => ({
-            _id: cat._id,
-            label: cat.name,
-            href: `/${activeGender}/${cat.slug}`,
+      try {
+        // 1. First check if custom admin navigation items exist for header-main
+        const res = await fetch("/api/v1/nav-items?position=header-main");
+        const json = await res.json();
+        const items = json.data || [];
+        if (items.length > 0) {
+          setNavItems(items);
+          return;
+        }
+
+        // 2. Fallback to active gender or category list
+        if (activeGender) {
+          const catRes = await fetch(`/api/v1/categories?gender=${activeGender}`);
+          const catJson = await catRes.json();
+          const categories = catJson.data || [];
+          const mapped = categories.map((cat: any) => {
+            const cleanSlug = (cat.slug || "").replace(/^\/+/, "");
+            const href = cleanSlug.startsWith(`${activeGender}/`)
+              ? `/${cleanSlug}`
+              : `/${activeGender}/${cleanSlug}`;
+            return {
+              _id: cat._id,
+              label: cat.name,
+              href: normalizeHref(href),
+            };
+          });
+          setNavItems(mapped);
+        } else {
+          const catRes = await fetch("/api/v1/categories");
+          const catJson = await catRes.json();
+          const categories = catJson.data || [];
+          const genders = Array.from(new Set(categories.map((c: any) => c.gender))) as string[];
+          const mapped = genders.map((gender) => ({
+            _id: gender,
+            label: gender.charAt(0).toUpperCase() + gender.slice(1),
+            href: `/${gender}`,
           }));
           setNavItems(mapped);
-        } catch {
-          setNavItems([]);
         }
-      } else {
-        try {
-          const res = await fetch("/api/v1/nav-items?position=header-main");
-          const json = await res.json();
-          const items = json.data || [];
-          if (items.length > 0) {
-            setNavItems(items);
-          } else {
-            const catRes = await fetch("/api/v1/categories");
-            const catJson = await catRes.json();
-            const categories = catJson.data || [];
-            const genders = Array.from(new Set(categories.map((c: any) => c.gender))) as string[];
-            const mapped = genders.map((gender) => ({
-              _id: gender,
-              label: gender.charAt(0).toUpperCase() + gender.slice(1),
-              href: `/${gender}`,
-            }));
-            setNavItems(mapped);
-          }
-        } catch {
-          setNavItems([]);
-        }
+      } catch {
+        setNavItems([]);
       }
     };
     fetchNavItems();

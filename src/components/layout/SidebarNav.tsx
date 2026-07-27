@@ -6,6 +6,8 @@ import { X, ChevronRight } from "lucide-react";
 import { SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
+import { normalizeHref } from "@/lib/utils";
+
 interface SidebarNavProps {
   onClose: () => void;
 }
@@ -165,7 +167,7 @@ export function SidebarNav({ onClose }: SidebarNavProps) {
               <nav className="py-2">
                 {subcategories.length === 0 ? (
                   <Link
-                    href={`/${activeGender}/${activeCategory?.slug}`}
+                    href={normalizeHref(`/${activeGender}/${activeCategory?.slug}`)}
                     onClick={onClose}
                     className="block px-6 py-3 text-sm tracking-wide hover:bg-muted/50 transition-colors"
                   >
@@ -175,7 +177,7 @@ export function SidebarNav({ onClose }: SidebarNavProps) {
                   subcategories.map((sub) => (
                     <Link
                       key={sub._id}
-                      href={`/${activeGender}/${sub.slug}`}
+                      href={normalizeHref(`/${activeGender}/${sub.slug}`)}
                       onClick={onClose}
                       className="block px-6 py-3 text-sm tracking-wide hover:bg-muted/50 transition-colors"
                     >
