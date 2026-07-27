@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Link2, Search, Check, FileText, FolderTree, ShoppingBag, ExternalLink, HelpCircle, Loader2 } from "lucide-react";
+import { Link2, Search, Check, FileText, FolderTree, ShoppingBag, ExternalLink, HelpCircle, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -39,6 +39,7 @@ interface LinkSelectorProps {
   placeholder?: string;
   className?: string;
   label?: string;
+  suggestLabel?: string; // e.g. form.label ("Punjabi")
 }
 
 export function LinkSelector({
@@ -47,6 +48,7 @@ export function LinkSelector({
   placeholder = "Select or enter a storefront link...",
   className = "",
   label,
+  suggestLabel,
 }: LinkSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"system" | "categories" | "products" | "custom">("system");
@@ -70,6 +72,23 @@ export function LinkSelector({
     { name: "Shopping Cart", path: "/cart", description: "Customer shopping cart" },
     { name: "Checkout", path: "/checkout", description: "Direct order checkout page" },
   ];
+
+  // Smart suggestions derived from suggestLabel (e.g. "Punjabi")
+  const getSmartSuggestions = useCallback(() => {
+    if (!suggestLabel || !suggestLabel.trim()) return [];
+    const clean = suggestLabel.trim();
+    const slug = clean.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    if (!slug) return [];
+
+    return [
+      { label: `Men's ${clean}`, path: `/man/${slug}`, dept: "Man" },
+      { label: `Women's ${clean}`, path: `/woman/${slug}`, dept: "Woman font-semibold" },
+      { label: `Kids' ${clean}`, path: `/kids/${slug}`, dept: "Kids" },
+      { label: `Search "${clean}"`, path: `/search?q=${encodeURIComponent(clean)}`, dept: "Search" },
+    ];
+  }, [suggestLabel]);
+
+  const smartSuggestions = getSmartSuggestions();
 
   // Fetch categories
   const fetchCategories = useCallback(async () => {
@@ -111,11 +130,10 @@ export function LinkSelector({
     if (isOpen) {
       fetchCategories();
       fetchProducts("");
-      setSearchQuery("");
-      // If the current value is not in system pages / categories / products, put it in customUrl
+      setSearchQuery(suggestLabel || "");
       setCustomUrl(value);
     }
-  }, [isOpen, value, fetchCategories, fetchProducts]);
+  }, [isOpen, value, suggestLabel, fetchCategories, fetchProducts]);
 
   // Debounced/Triggered search for products when tab is active
   useEffect(() => {
@@ -166,11 +184,11 @@ export function LinkSelector({
     const sysPage = systemPages.find((p) => p.path === value);
     if (sysPage) return `System: ${sysPage.name}`;
 
-    // 2. Check categories (needs data loaded or wait for fetch)
-    const matchedCategory = categories.find((c) => getCategoryPath(c) === value);
+    // 2. Check categories
+    const matchedCategory = categories.find((c) => getCategoryPath(c) === value || value.endsWith(`/${c.slug}`));
     if (matchedCategory) {
       const hierarchy = getCategoryHierarchyName(matchedCategory, categories);
-      return `Category: ${hierarchy} (${matchedCategory.gender})`;
+      return `Category: ${hierarchy} (${value})`;
     }
 
     // 3. Check products
@@ -180,6 +198,8 @@ export function LinkSelector({
       if (matchedProd) return `Product: ${matchedProd.name}`;
       return `Product Path: ${value}`;
     }
+
+    if (value.startsWith("/search")) return `Search Query: ${value}`;
 
     return `Custom URL: ${value}`;
   };
@@ -191,7 +211,7 @@ export function LinkSelector({
     const path = getCategoryPath(cat).toLowerCase();
     const query = searchQuery.toLowerCase();
 
-    return hierarchy.includes(query) || gender.includes(query) || path.includes(query);
+    return hierarchy.includes(query) || gender.includes(query) || path.includes(query) || cat.slug.includes(query);
   });
 
   // Filter system pages by search
@@ -228,6 +248,33 @@ export function LinkSelector({
         </Button>
       </div>
 
+      {/* Quick Suggestions Pills (when suggestLabel like "Punjabi" is present) */}
+      {smartSuggestions.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5 pt-1 text-[11px]">
+          <span className="text-muted-foreground font-medium flex items-center gap-1 text-[10px]">
+            <Sparkles className="w-3 h-3 text-amber-500" />
+            Suggested for "{suggestLabel}":
+          </span>
+          {smartSuggestions.map((item) => {
+            const isSelected = value === item.path;
+            return (
+              <button
+                key={item.path}
+                type="button"
+                onClick={() => handleSelect(item.path)}
+                className={`px-2 py-0.5 rounded text-[10px] font-mono border transition-all cursor-pointer ${
+                  isSelected
+                    ? "bg-black text-white border-black font-semibold"
+                    : "bg-muted/40 hover:bg-black hover:text-white border-border text-foreground"
+                }`}
+              >
+                {item.label} <span className="opacity-70 text-[9px]">({item.path})</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {value && (
         <div className="flex items-center justify-between text-[11px] bg-muted/30 border border-border/60 px-2.5 py-1.5 rounded-sm">
           <span className="text-muted-foreground flex items-center gap-1 truncate">
@@ -239,23 +286,31 @@ export function LinkSelector({
       )}
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-w-xl w-[95vw] max-h-[85vh] flex flex-col p-0 overflow-hidden bg-background">
+        <DialogContent className="max-w-2xl w-[95vw] max-h-[85vh] flex flex-col p-0 overflow-hidden bg-background">
           <DialogHeader className="p-5 pb-3 border-b">
-            <DialogTitle className="flex items-center gap-2 text-lg">
-              <Link2 className="w-5 h-5 text-black" />
-              Link Selection Helper
+            <DialogTitle className="flex items-center justify-between text-lg pr-6">
+              <span className="flex items-center gap-2">
+                <Link2 className="w-5 h-5 text-black" />
+                Link Selection Helper
+              </span>
+              {suggestLabel && (
+                <span className="text-xs bg-amber-50 border border-amber-200 text-amber-900 px-2.5 py-1 rounded-full font-normal flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 text-amber-600" />
+                  Label: "{suggestLabel}"
+                </span>
+              )}
             </DialogTitle>
           </DialogHeader>
 
           {/* Search bar inside dialog */}
-          <div className="p-4 pb-2 border-b bg-muted/10">
+          <div className="p-4 pb-2 border-b bg-muted/10 space-y-2">
             <div className="relative">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder={
                   activeTab === "products"
                     ? "Search products dynamically..."
-                    : "Search inside this tab..."
+                    : "Search categories, pages, or type keyword..."
                 }
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -270,12 +325,32 @@ export function LinkSelector({
                 </button>
               )}
             </div>
+
+            {/* Smart suggestions bar inside modal */}
+            {smartSuggestions.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5 text-[11px] pt-1">
+                <span className="text-muted-foreground text-[10px] font-semibold flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 text-amber-500" />
+                  Quick Apply:
+                </span>
+                {smartSuggestions.map((item) => (
+                  <button
+                    key={item.path}
+                    type="button"
+                    onClick={() => handleSelect(item.path)}
+                    className="px-2 py-0.5 bg-white hover:bg-black hover:text-white border border-border rounded text-[10px] font-mono transition-colors"
+                  >
+                    {item.label} <code className="text-[9px] opacity-70">({item.path})</code>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Tabs header */}
           <div className="flex border-b text-xs font-medium">
             <button
-              onClick={() => { setActiveTab("system"); setSearchQuery(""); }}
+              onClick={() => { setActiveTab("system"); }}
               className={`flex-1 py-3 text-center border-b-2 transition-colors ${
                 activeTab === "system"
                   ? "border-black text-black font-semibold"
@@ -288,7 +363,7 @@ export function LinkSelector({
               </div>
             </button>
             <button
-              onClick={() => { setActiveTab("categories"); setSearchQuery(""); }}
+              onClick={() => { setActiveTab("categories"); }}
               className={`flex-1 py-3 text-center border-b-2 transition-colors ${
                 activeTab === "categories"
                   ? "border-black text-black font-semibold"
@@ -297,11 +372,11 @@ export function LinkSelector({
             >
               <div className="flex items-center justify-center gap-1.5">
                 <FolderTree className="w-3.5 h-3.5" />
-                Categories
+                Categories ({filteredCategories.length})
               </div>
             </button>
             <button
-              onClick={() => { setActiveTab("products"); setSearchQuery(""); }}
+              onClick={() => { setActiveTab("products"); }}
               className={`flex-1 py-3 text-center border-b-2 transition-colors ${
                 activeTab === "products"
                   ? "border-black text-black font-semibold"
@@ -314,7 +389,7 @@ export function LinkSelector({
               </div>
             </button>
             <button
-              onClick={() => { setActiveTab("custom"); setSearchQuery(""); }}
+              onClick={() => { setActiveTab("custom"); }}
               className={`flex-1 py-3 text-center border-b-2 transition-colors ${
                 activeTab === "custom"
                   ? "border-black text-black font-semibold"
@@ -370,7 +445,7 @@ export function LinkSelector({
             )}
 
             {activeTab === "categories" && (
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 {loadingCategories && (
                   <div className="flex justify-center items-center py-10 gap-2 text-xs text-muted-foreground">
                     <Loader2 className="w-4 h-4 animate-spin text-black" />
@@ -380,43 +455,115 @@ export function LinkSelector({
 
                 {!loadingCategories && filteredCategories.length > 0 ? (
                   filteredCategories.map((cat) => {
-                    const path = getCategoryPath(cat);
-                    const isSelected = value === path;
+                    const defaultPath = getCategoryPath(cat);
+                    const isSelected = value === defaultPath;
                     const hierarchy = getCategoryHierarchyName(cat, categories);
+                    const manPath = `/man/${cat.slug}`;
+                    const womanPath = `/woman/${cat.slug}`;
+                    const kidsPath = `/kids/${cat.slug}`;
+                    const searchPath = `/search?q=${encodeURIComponent(cat.name)}`;
+
                     return (
-                      <button
+                      <div
                         key={cat._id}
-                        onClick={() => handleSelect(path)}
-                        className={`w-full text-left p-3 rounded-lg border transition-all flex items-center justify-between ${
+                        className={`p-3 rounded-lg border transition-all space-y-2 ${
                           isSelected
-                            ? "bg-neutral-50 border-black font-medium"
-                            : "hover:bg-muted/50 border-border"
+                            ? "bg-neutral-50 border-black"
+                            : "hover:bg-muted/30 border-border"
                         }`}
                       >
-                        <div className="space-y-1 pr-4">
-                          <div className="text-xs font-semibold flex items-center flex-wrap gap-1.5">
-                            {hierarchy}
-                            <span className="text-[10px] uppercase font-mono bg-zinc-100 text-zinc-600 px-1.5 py-0.5 rounded font-semibold">
-                              {cat.gender}
-                            </span>
-                            {isSelected && <span className="text-[10px] bg-black text-white px-1.5 py-0.2 rounded font-mono font-normal">Active</span>}
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <div className="text-xs font-semibold flex items-center flex-wrap gap-1.5">
+                              {hierarchy}
+                              <span className="text-[10px] uppercase font-mono bg-zinc-100 text-zinc-600 px-1.5 py-0.5 rounded font-semibold">
+                                {cat.gender}
+                              </span>
+                              {isSelected && <span className="text-[10px] bg-black text-white px-1.5 py-0.2 rounded font-mono font-normal">Active</span>}
+                            </div>
+                            <code className="text-[10px] text-zinc-500 font-mono block">Default: {defaultPath}</code>
                           </div>
-                          <code className="text-[10px] text-zinc-500 font-mono block">{path}</code>
+
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => handleSelect(defaultPath)}
+                            className="text-xs bg-black text-white hover:bg-neutral-800"
+                          >
+                            Select Default
+                          </Button>
                         </div>
-                        <div className="shrink-0">
-                          {isSelected ? (
-                            <Check className="h-4 w-4 text-black" />
-                          ) : (
-                            <Link2 className="h-3.5 w-3.5 text-muted-foreground opacity-30" />
-                          )}
+
+                        {/* Department variant buttons */}
+                        <div className="flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-border/40 text-[10px]">
+                          <span className="text-muted-foreground font-medium">Department links:</span>
+                          <button
+                            type="button"
+                            onClick={() => handleSelect(manPath)}
+                            className={`px-2 py-0.5 rounded border font-mono ${value === manPath ? "bg-black text-white font-bold" : "bg-white hover:bg-black hover:text-white"}`}
+                          >
+                            Men ({manPath})
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSelect(womanPath)}
+                            className={`px-2 py-0.5 rounded border font-mono ${value === womanPath ? "bg-black text-white font-bold" : "bg-white hover:bg-black hover:text-white"}`}
+                          >
+                            Women ({womanPath})
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSelect(kidsPath)}
+                            className={`px-2 py-0.5 rounded border font-mono ${value === kidsPath ? "bg-black text-white font-bold" : "bg-white hover:bg-black hover:text-white"}`}
+                          >
+                            Kids ({kidsPath})
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSelect(searchPath)}
+                            className={`px-2 py-0.5 rounded border font-mono ${value === searchPath ? "bg-black text-white font-bold" : "bg-white hover:bg-black hover:text-white"}`}
+                          >
+                            Search ({searchPath})
+                          </button>
                         </div>
-                      </button>
+                      </div>
                     );
                   })
                 ) : (
                   !loadingCategories && (
-                    <div className="text-center py-8 text-muted-foreground text-xs">
-                      {searchQuery ? "No matching categories." : "No categories defined in your shop."}
+                    <div className="text-center py-8 text-muted-foreground text-xs space-y-2">
+                      <p>{searchQuery ? `No matching category found for "${searchQuery}".` : "No categories defined in your shop."}</p>
+                      {searchQuery && (
+                        <div className="flex justify-center gap-2 pt-2">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleSelect(`/man/${searchQuery.toLowerCase().replace(/\s+/g, "-")}`)}
+                            className="text-xs"
+                          >
+                            Use /man/{searchQuery.toLowerCase().replace(/\s+/g, "-")}
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleSelect(`/woman/${searchQuery.toLowerCase().replace(/\s+/g, "-")}`)}
+                            className="text-xs"
+                          >
+                            Use /woman/{searchQuery.toLowerCase().replace(/\s+/g, "-")}
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleSelect(`/search?q=${encodeURIComponent(searchQuery)}`)}
+                            className="text-xs"
+                          >
+                            Search Link
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   )
                 )}
@@ -508,7 +655,7 @@ export function LinkSelector({
                   <label className="text-xs font-medium text-muted-foreground">Custom URL or Path</label>
                   <div className="flex gap-2">
                     <Input
-                      placeholder="e.g. https://instagram.com/my-shop or /custom-sales-page"
+                      placeholder="e.g. /man/punjabi or /woman/punjabi or /search?q=punjabi"
                       value={customUrl}
                       onChange={(e) => setCustomUrl(e.target.value)}
                       className="font-mono text-xs"
@@ -519,13 +666,49 @@ export function LinkSelector({
                     </Button>
                   </div>
                 </div>
+
+                {suggestLabel && (
+                  <div className="space-y-1.5 border-t pt-3">
+                    <label className="text-xs font-semibold text-foreground">Suggested paths for "{suggestLabel}":</label>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleSelect(`/man/${suggestLabel.toLowerCase().replace(/\s+/g, "-")}`)}
+                        className="text-xs font-mono"
+                      >
+                        /man/{suggestLabel.toLowerCase().replace(/\s+/g, "-")}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleSelect(`/woman/${suggestLabel.toLowerCase().replace(/\s+/g, "-")}`)}
+                        className="text-xs font-mono"
+                      >
+                        /woman/{suggestLabel.toLowerCase().replace(/\s+/g, "-")}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleSelect(`/search?q=${encodeURIComponent(suggestLabel)}`)}
+                        className="text-xs font-mono"
+                      >
+                        /search?q={suggestLabel}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
                 <div className="bg-amber-50 border border-amber-200 p-3 rounded text-[11px] text-amber-800 space-y-1">
                   <div className="font-bold flex items-center gap-1">
                     <HelpCircle className="w-3.5 h-3.5" />
                     When should I use a custom link?
                   </div>
                   <p>
-                    Use this for paths that aren't categories or individual products, or to point customers to external websites, social channels, or special campaign pages.
+                    Use this for specific paths like <code className="font-mono bg-white/60 px-1 font-bold">/man/punjabi</code>, <code className="font-mono bg-white/60 px-1 font-bold">/woman/punjabi</code>, or search queries <code className="font-mono bg-white/60 px-1 font-bold">/search?q=punjabi</code>.
                   </p>
                 </div>
               </form>

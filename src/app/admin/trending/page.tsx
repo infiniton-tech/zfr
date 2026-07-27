@@ -464,6 +464,7 @@ export default function TrendingAdminPage() {
                 value={form.ctaLink}
                 onChange={(val) => setForm({ ...form, ctaLink: val })}
                 placeholder="e.g. /woman/tops or /man/shirts"
+                suggestLabel={form.name}
               />
             </div>
           </div>

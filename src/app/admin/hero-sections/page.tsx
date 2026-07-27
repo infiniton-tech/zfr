@@ -253,7 +253,11 @@ export default function AdminHeroSectionsPage() {
                 </div>
                 <div className="grid gap-2">
                   <Label>CTA Link</Label>
-                  <LinkSelector value={form.ctaLink} onChange={(val) => setForm({ ...form, ctaLink: val })} />
+                  <LinkSelector
+                    value={form.ctaLink}
+                    onChange={(val) => setForm({ ...form, ctaLink: val })}
+                    suggestLabel={form.title || form.ctaText}
+                  />
                 </div>
               </div>
               <label className="flex items-center gap-2 text-sm cursor-pointer">

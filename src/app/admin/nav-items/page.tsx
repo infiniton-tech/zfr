@@ -129,7 +129,12 @@ export default function AdminNavItemsPage() {
               </div>
               <div className="grid gap-2">
                 <Label>URL (href) *</Label>
-                <LinkSelector value={form.href} onChange={(val) => setForm({ ...form, href: val })} placeholder="e.g. /woman" />
+                <LinkSelector
+                  value={form.href}
+                  onChange={(val) => setForm({ ...form, href: val })}
+                  placeholder="e.g. /man/punjabi or /woman/punjabi"
+                  suggestLabel={form.label}
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
