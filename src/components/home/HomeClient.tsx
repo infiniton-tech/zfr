@@ -223,7 +223,7 @@ export function HomeClient({ heroes, trending, position, products }: HomeClientP
         <CategoryPills isMobile />
         <ProductGrid isMobile />
         {activeTab && (
-          <div className="mt-8 flex justify-center px-4">
+          <div className="mt-8 mb-12 flex justify-center px-4">
             <Link
               href={viewAllHref}
               className="px-10 py-3.5 border border-neutral-200 text-xs font-semibold tracking-[0.2em] text-neutral-800 hover:border-black hover:text-black uppercase transition-colors rounded-sm"
@@ -232,7 +232,7 @@ export function HomeClient({ heroes, trending, position, products }: HomeClientP
             </Link>
           </div>
         )}
-        <div className="mt-10">
+        <div className="mt-8">
           {(trendingBelowHero || trendingBelowProducts) && <TrendingGrid initialCategories={trending} />}
           <CommunitySection />
         </div>
@@ -245,7 +245,7 @@ export function HomeClient({ heroes, trending, position, products }: HomeClientP
         <CategoryPills />
         <ProductGrid />
         {activeTab && (
-          <div className="mt-10 flex justify-center px-6 md:px-12">
+          <div className="mt-10 mb-16 flex justify-center px-6 md:px-12">
             <Link
               href={viewAllHref}
               className="px-10 py-3.5 border border-neutral-200 text-xs font-semibold tracking-[0.2em] text-neutral-800 hover:border-black hover:text-black uppercase transition-colors rounded-sm"
@@ -254,7 +254,11 @@ export function HomeClient({ heroes, trending, position, products }: HomeClientP
             </Link>
           </div>
         )}
-        {(trendingBelowHero || trendingBelowProducts) && <TrendingGrid initialCategories={trending} />}
+        {(trendingBelowHero || trendingBelowProducts) && (
+          <div className="pt-4 md:pt-8">
+            <TrendingGrid initialCategories={trending} />
+          </div>
+        )}
         <CommunitySection />
       </div>
 
