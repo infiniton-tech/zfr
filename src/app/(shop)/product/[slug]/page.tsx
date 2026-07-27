@@ -179,7 +179,7 @@ async function ProductPageWrapper({ slug }: { slug: string }) {
               <AccordionItem value="shipping">
                 <AccordionTrigger className="text-xs tracking-wider">SHIPPING & RETURNS</AccordionTrigger>
                 <AccordionContent className="text-sm text-muted-foreground">
-                  Free standard shipping on orders over ৳2,000. Returns accepted within 30 days.
+                  Delivery Fee: ৳60 (Inside Dhaka) | ৳120 (Outside Dhaka). Fast delivery across all 64 districts in Bangladesh.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="size">
@@ -197,7 +197,7 @@ async function ProductPageWrapper({ slug }: { slug: string }) {
             <div className="flex items-center gap-6 mt-8 pt-6 border-t border-border">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Truck className="w-4 h-4" />
-                <span>Free shipping over ৳2,000</span>
+                <span>Dhaka ৳60 / Outside Dhaka ৳120</span>
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <RotateCcw className="w-4 h-4" />

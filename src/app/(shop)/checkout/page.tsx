@@ -7,10 +7,11 @@ import { useSession } from "next-auth/react";
 import { useCart } from "@/store/cart";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ChevronLeft, Check, AlertCircle } from "lucide-react";
+import { ChevronLeft, Check, Truck } from "lucide-react";
 import { toast } from "sonner";
 import { getVisitorId } from "@/lib/tracker";
 import { formatPrice } from "@/lib/utils";
+import { BANGLADESH_DISTRICTS, getShippingCost, getShippingLocationLabel } from "@/lib/districts";
 
 const STEPS = ["Shipping", "Payment", "Review"];
 
@@ -44,9 +45,9 @@ export default function CheckoutPage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [street, setStreet] = useState("");
-  const [city, setCity] = useState("");
-  const [state, setState] = useState("");
-  const [zip, setZip] = useState("");
+  const [city, setCity] = useState("Dhaka");
+  const [state, setState] = useState("Dhaka");
+  const [zip, setZip] = useState("1200");
   const [country, setCountry] = useState("Bangladesh");
   const [saveAddress, setSaveAddress] = useState(false);
 
@@ -58,6 +59,8 @@ export default function CheckoutPage() {
   const [cardName, setCardName] = useState("");
 
   const total = getTotalPrice();
+  const shippingCost = getShippingCost(city);
+  const grandTotal = total + shippingCost;
 
   // Redirect to login if unauthenticated
   useEffect(() => {
@@ -80,10 +83,10 @@ export default function CheckoutPage() {
           if (defaultAddr) {
             setSelectedAddressId(defaultAddr._id);
             setStreet(defaultAddr.street);
-            setCity(defaultAddr.city);
-            setState(defaultAddr.state);
-            setZip(defaultAddr.zip);
-            setCountry(defaultAddr.country);
+            setCity(defaultAddr.city || "Dhaka");
+            setState(defaultAddr.state || "Dhaka");
+            setZip(defaultAddr.zip || "1200");
+            setCountry(defaultAddr.country || "Bangladesh");
           }
         }
       } catch {
@@ -106,25 +109,25 @@ export default function CheckoutPage() {
     setSelectedAddressId(id);
     if (id === "new") {
       setStreet("");
-      setCity("");
-      setState("");
-      setZip("");
+      setCity("Dhaka");
+      setState("Dhaka");
+      setZip("1200");
       setCountry("Bangladesh");
     } else {
       const addr = savedAddresses.find((a) => a._id === id);
       if (addr) {
         setStreet(addr.street);
-        setCity(addr.city);
-        setState(addr.state);
-        setZip(addr.zip);
-        setCountry(addr.country);
+        setCity(addr.city || "Dhaka");
+        setState(addr.state || "Dhaka");
+        setZip(addr.zip || "1200");
+        setCountry(addr.country || "Bangladesh");
       }
     }
   };
 
   const handleShippingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!firstName || !lastName || !email || !phone || !street || !city || !state || !zip || !country) {
+    if (!firstName || !lastName || !email || !phone || !street || !city || !state || !country) {
       toast.error("Please fill in all shipping fields");
       return;
     }
@@ -169,7 +172,7 @@ export default function CheckoutPage() {
         street,
         city,
         state,
-        zip,
+        zip: zip || "1200",
         country,
         isDefault: false,
       };
@@ -179,11 +182,11 @@ export default function CheckoutPage() {
       const orderPayload = {
         items: orderItems,
         shippingAddress,
-        billingAddress: shippingAddress, // simplify billing to match shipping
+        billingAddress: shippingAddress,
         totalAmount: total,
-        shippingCost: 0,
+        shippingCost,
         discountAmount: 0,
-        finalAmount: total,
+        finalAmount: grandTotal,
         visitorId,
         paymentMethod,
       };
@@ -331,22 +334,54 @@ export default function CheckoutPage() {
                 
                 <div className="space-y-2">
                   <Label className="text-xs tracking-wider">ADDRESS / STREET</Label>
-                  <Input className="rounded-none" value={street} onChange={(e) => setStreet(e.target.value)} required disabled={selectedAddressId !== "new" && selectedAddressId !== ""} />
+                  <Input className="rounded-none" value={street} onChange={(e) => setStreet(e.target.value)} placeholder="House/Road/Area address" required disabled={selectedAddressId !== "new" && selectedAddressId !== ""} />
                 </div>
                 
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-xs tracking-wider">CITY</Label>
-                    <Input className="rounded-none" value={city} onChange={(e) => setCity(e.target.value)} required disabled={selectedAddressId !== "new" && selectedAddressId !== ""} />
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {/* District / Zilla Dropdown */}
+                  <div className="space-y-2 sm:col-span-1">
+                    <Label className="text-xs tracking-wider">DISTRICT / ZILLA</Label>
+                    <select
+                      className="w-full border rounded-none p-2.5 text-xs bg-background focus:outline-none focus:border-black"
+                      value={city}
+                      onChange={(e) => {
+                        setCity(e.target.value);
+                        if (!state || state === "Dhaka") {
+                          setState(e.target.value);
+                        }
+                      }}
+                      required
+                      disabled={selectedAddressId !== "new" && selectedAddressId !== ""}
+                    >
+                      {BANGLADESH_DISTRICTS.map((d) => (
+                        <option key={d} value={d}>
+                          {d} {d === "Dhaka" ? "(Inside Dhaka - ৳60)" : "(Outside Dhaka - ৳120)"}
+                        </option>
+                      ))}
+                    </select>
                   </div>
+
                   <div className="space-y-2">
-                    <Label className="text-xs tracking-wider">STATE / REGION</Label>
-                    <Input className="rounded-none" value={state} onChange={(e) => setState(e.target.value)} required disabled={selectedAddressId !== "new" && selectedAddressId !== ""} />
+                    <Label className="text-xs tracking-wider">DIVISION / REGION</Label>
+                    <Input className="rounded-none text-xs" value={state} onChange={(e) => setState(e.target.value)} placeholder="e.g. Dhaka Division" required disabled={selectedAddressId !== "new" && selectedAddressId !== ""} />
                   </div>
+
                   <div className="space-y-2">
-                    <Label className="text-xs tracking-wider">ZIP CODE</Label>
-                    <Input className="rounded-none" value={zip} onChange={(e) => setZip(e.target.value)} required disabled={selectedAddressId !== "new" && selectedAddressId !== ""} />
+                    <Label className="text-xs tracking-wider">ZIP / POSTAL CODE</Label>
+                    <Input className="rounded-none text-xs" value={zip} onChange={(e) => setZip(e.target.value)} placeholder="e.g. 1200" disabled={selectedAddressId !== "new" && selectedAddressId !== ""} />
                   </div>
+                </div>
+
+                {/* Shipping Fee Notice Badge */}
+                <div className="p-3 bg-muted/40 border border-border flex items-center justify-between text-xs rounded-sm">
+                  <div className="flex items-center gap-2">
+                    <Truck className="w-4 h-4 text-black shrink-0" />
+                    <div>
+                      <span className="font-semibold text-foreground">Delivery Charge: </span>
+                      <span className="text-muted-foreground">{getShippingLocationLabel(city)}</span>
+                    </div>
+                  </div>
+                  <span className="font-bold font-sans text-black">{formatPrice(shippingCost)}</span>
                 </div>
 
                 <div className="space-y-2">
@@ -361,7 +396,7 @@ export default function CheckoutPage() {
                       id="saveAddress"
                       checked={saveAddress}
                       onChange={(e) => setSaveAddress(e.target.checked)}
-                      className="w-3 h-3"
+                      className="w-3 h-3 accent-black"
                     />
                     <Label htmlFor="saveAddress" className="text-xs cursor-pointer">Save this address to my profile</Label>
                   </div>
@@ -436,11 +471,11 @@ export default function CheckoutPage() {
                         onChange={() => setPaymentMethod("online")}
                         className="w-4 h-4 accent-black"
                       />
-                      <span className="text-sm font-semibold">Online Payment (Apple Pay, Google Pay, PayPal)</span>
+                      <span className="text-sm font-semibold">Online Payment (Apple Pay, Google Pay, bKash / Nagad)</span>
                     </label>
                     {paymentMethod === "online" && (
                       <div className="pl-7 mt-2 text-xs text-muted-foreground leading-relaxed">
-                        Securely complete your transaction using digital wallet or PayPal on the next screen.
+                        Securely complete your transaction using digital wallet or mobile banking on the next screen.
                       </div>
                     )}
                   </div>
@@ -459,7 +494,7 @@ export default function CheckoutPage() {
                     </label>
                     {paymentMethod === "cod" && (
                       <div className="pl-7 mt-2 text-xs text-muted-foreground leading-relaxed">
-                        Pay in cash when the courier delivers your package. Please keep precise change ready.
+                        Pay in cash when courier delivers your package. Delivery fee: <span className="font-semibold text-foreground">{formatPrice(shippingCost)}</span> ({getShippingLocationLabel(city)}).
                       </div>
                     )}
                   </div>
@@ -488,18 +523,18 @@ export default function CheckoutPage() {
                 </div>
                 <div className="border border-border p-4 space-y-2 text-xs">
                   <h3 className="font-semibold uppercase tracking-wider">Shipping Address</h3>
-                  <p>{firstName} {lastName}</p>
+                  <p className="font-medium">{firstName} {lastName}</p>
                   <p>{street}, {city}, {state} {zip}</p>
                   <p>{country}</p>
                   <p>Phone: {phone}</p>
                 </div>
                 <div className="border border-border p-4 space-y-2 text-xs">
-                  <h3 className="font-semibold uppercase tracking-wider">Payment Method</h3>
-                  <p className="capitalize">
-                    {paymentMethod === "card" && "Credit / Debit Card"}
-                    {paymentMethod === "online" && "Online Payment (Apple Pay, Google Pay, PayPal)"}
-                    {paymentMethod === "cod" && "Cash on Delivery (COD)"}
-                  </p>
+                  <h3 className="font-semibold uppercase tracking-wider">Delivery Charge & Payment</h3>
+                  <p><span className="font-semibold">Delivery:</span> {getShippingLocationLabel(city)} — {formatPrice(shippingCost)}</p>
+                  <p><span className="font-semibold">Payment:</span> {
+                    paymentMethod === "card" ? "Credit / Debit Card" :
+                    paymentMethod === "online" ? "Online Payment" : "Cash on Delivery (COD)"
+                  }</p>
                 </div>
                 <div className="flex gap-3">
                   <button onClick={() => setStep(1)} className="flex-1 text-xs tracking-[0.2em] py-4 border border-border hover:border-foreground transition-colors">
@@ -517,22 +552,25 @@ export default function CheckoutPage() {
             )}
           </div>
 
-          {/* Summary */}
-          <div className="bg-muted p-6 h-fit">
-            <h3 className="text-sm font-medium tracking-wide mb-4">ORDER SUMMARY</h3>
-            <div className="space-y-2 text-sm">
+          {/* Summary Sidebar */}
+          <div className="bg-muted p-6 h-fit border border-border/40 space-y-4">
+            <h3 className="text-sm font-medium tracking-wide border-b pb-3">ORDER SUMMARY</h3>
+            <div className="space-y-2.5 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Subtotal</span>
                 <span>{formatPrice(total)}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Shipping</span>
-                <span>Free</span>
+              <div className="flex justify-between items-start text-xs">
+                <div>
+                  <span className="text-muted-foreground block">Shipping</span>
+                  <span className="text-[10px] text-zinc-500 block">{city === "Dhaka" ? "Inside Dhaka" : "Outside Dhaka"}</span>
+                </div>
+                <span className="font-medium">{formatPrice(shippingCost)}</span>
               </div>
             </div>
-            <div className="flex justify-between text-sm font-semibold mt-4 pt-4 border-t border-border">
+            <div className="flex justify-between text-base font-bold pt-3 border-t border-border">
               <span>Total</span>
-              <span>{formatPrice(total)}</span>
+              <span>{formatPrice(grandTotal)}</span>
             </div>
           </div>
         </div>
