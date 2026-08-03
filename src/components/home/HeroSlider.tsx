@@ -72,8 +72,10 @@ export function HeroSlider({ heroes, compact = false, intervalMs = 5000 }: HeroS
         return (
           <div
             key={i}
-            className={`absolute inset-0 transition-all duration-700 ease-in-out ${
-              active ? "opacity-100 z-10 visible" : "opacity-0 z-0 invisible pointer-events-none hidden"
+            className={`absolute inset-0 transition-all duration-1000 ease-in-out transform ${
+              active
+                ? "opacity-100 z-10 scale-100 pointer-events-auto"
+                : "opacity-0 z-0 scale-103 pointer-events-none"
             }`}
             aria-hidden={!active}
           >

@@ -508,7 +508,7 @@ async function run() {
   ];
   await HeroSection.insertMany(heroSections);
 
-  // ===== TRENDING ITEMS (MEN ONLY) =====
+  // ===== TRENDING ITEMS (ALL 8 MEN CATEGORIES) =====
   const trendingItems = [
     {
       name: "PANJABI",
@@ -541,6 +541,38 @@ async function run() {
       gender: "man",
       isActive: true,
       sortOrder: 4
+    },
+    {
+      name: "TROUSERS",
+      image: img("charcoal_grey_pant", "/images/charcoal_grey_pant.jpg"),
+      ctaLink: "/man/trousers-man",
+      gender: "man",
+      isActive: true,
+      sortOrder: 5
+    },
+    {
+      name: "JEANS",
+      image: img("navy_white_stripe_shirt", "/images/navy_white_stripe_shirt.jpg"),
+      ctaLink: "/man/jeans-man",
+      gender: "man",
+      isActive: true,
+      sortOrder: 6
+    },
+    {
+      name: "SHOES",
+      image: img("chocolate_brown_shirt", "/images/chocolate_brown_shirt.jpg"),
+      ctaLink: "/man/shoes-man",
+      gender: "man",
+      isActive: true,
+      sortOrder: 7
+    },
+    {
+      name: "ACCESSORIES",
+      image: img("black_designer_panjabi", "/images/black_designer_panjabi.jpg"),
+      ctaLink: "/man/accessories-man",
+      gender: "man",
+      isActive: true,
+      sortOrder: 8
     }
   ];
   await TrendingItem.insertMany(trendingItems);

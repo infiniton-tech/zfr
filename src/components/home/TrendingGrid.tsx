@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useLayoutEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { normalizeHref } from "@/lib/utils";
 
@@ -14,49 +14,52 @@ interface TrendingCategory {
 
 const FALLBACK_CATEGORIES: TrendingCategory[] = [
   {
-    name: "TOPS",
-    slug: "woman/tops-bodysuits",
-    image: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=600&h=800&fit=crop&q=80",
+    name: "PANJABI",
+    slug: "man/panjabi-man",
+    image: "/images/navy_embroidered_panjabi.jpg",
+  },
+  {
+    name: "SHIRTS",
+    slug: "man/shirts-man",
+    image: "/images/emerald_green_linen_shirt.jpg",
+  },
+  {
+    name: "PANTS",
+    slug: "man/pant-man",
+    image: "/images/charcoal_grey_pant.jpg",
+  },
+  {
+    name: "T-SHIRTS",
+    slug: "man/t-shirts-man",
+    image: "/images/sand_beige_shirt.jpg",
   },
   {
     name: "TROUSERS",
-    slug: "woman/trousers",
-    image: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=600&h=800&fit=crop&q=80",
+    slug: "man/trousers-man",
+    image: "/images/charcoal_grey_pant.jpg",
   },
   {
-    name: "SKIRTS",
-    slug: "woman/skirts",
-    image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=600&h=800&fit=crop&q=80",
+    name: "JEANS",
+    slug: "man/jeans-man",
+    image: "/images/navy_white_stripe_shirt.jpg",
   },
   {
-    name: "FOOTWEAR",
-    slug: "woman/shoes",
-    image: "https://images.unsplash.com/photo-1560243563-062bfc001d68?w=600&h=800&fit=crop&q=80",
+    name: "SHOES",
+    slug: "man/shoes-man",
+    image: "/images/chocolate_brown_shirt.jpg",
+  },
+  {
+    name: "ACCESSORIES",
+    slug: "man/accessories-man",
+    image: "/images/black_designer_panjabi.jpg",
   },
 ];
 
-const TRENDING_SEEN_KEY = "zfr_trending_now_seen";
-
 export function TrendingGrid({ initialCategories }: { initialCategories?: TrendingCategory[] }) {
-  const [categories, setCategories] = useState<TrendingCategory[]>(initialCategories || []);
+  const [categories, setCategories] = useState<TrendingCategory[]>(
+    initialCategories && initialCategories.length > 0 ? initialCategories : FALLBACK_CATEGORIES
+  );
 
-  // Animation states
-  const [hasTriggered, setHasTriggered] = useState(false);
-  const [fadeOut, setFadeOut] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  // Once the intro animation has played this browser session, never replay it
-  const playedRef = useRef(false);
-
-  // Runs before paint so a repeat homepage visit within the same session
-  // never flashes the black overlay again.
-  useLayoutEffect(() => {
-    if (typeof window !== "undefined" && sessionStorage.getItem(TRENDING_SEEN_KEY)) {
-      playedRef.current = true;
-      setFadeOut(true);
-    }
-  }, []);
-
-  // Slider controls
   const sliderRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -80,8 +83,8 @@ export function TrendingGrid({ initialCategories }: { initialCategories?: Trendi
 
   const handleScroll = (direction: "left" | "right") => {
     if (!sliderRef.current) return;
-    const tileWidth = sliderRef.current.firstElementChild?.clientWidth ?? 300;
-    const scrollAmount = (tileWidth + 0) * 2;
+    const tileWidth = sliderRef.current.firstElementChild?.clientWidth ?? 200;
+    const scrollAmount = tileWidth * 2;
     sliderRef.current.scrollBy({
       left: direction === "left" ? -scrollAmount : scrollAmount,
       behavior: "smooth",
@@ -89,49 +92,8 @@ export function TrendingGrid({ initialCategories }: { initialCategories?: Trendi
   };
 
   useEffect(() => {
-    if (categories.length === 0) return;
-
-    let fadeTimer: any;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (playedRef.current) return; // already shown once this session
-
-        if (entry.isIntersecting) {
-          // Play animation and fade out
-          setHasTriggered(true);
-          fadeTimer = setTimeout(() => {
-            setFadeOut(true);
-            playedRef.current = true;
-            sessionStorage.setItem(TRENDING_SEEN_KEY, "1");
-          }, 1200);
-        } else {
-          // Reset states when leaving viewport so it triggers again next time
-          setHasTriggered(false);
-          setFadeOut(false);
-        }
-      },
-      { threshold: 0.15 } // Trigger when 15% of the section is visible
-    );
-
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
-
-    return () => {
-      if (containerRef.current) {
-        observer.unobserve(containerRef.current);
-      }
-      clearTimeout(fadeTimer);
-    };
-  }, [categories.length]);
-
-  useEffect(() => {
-    if (initialCategories && initialCategories.length > 0) return;
-
     async function fetchTrending() {
       try {
-        // 1. Try the curated Trending admin items first
         const res = await fetch("/api/v1/trending");
         const json = await res.json();
         if (json.data && json.data.length > 0) {
@@ -146,99 +108,80 @@ export function TrendingGrid({ initialCategories }: { initialCategories?: Trendi
           return;
         }
       } catch {
-        // fall through
+        // fall back to default categories
       }
-
-      try {
-        // 2. Fall back to trending products
-        const res = await fetch("/api/v1/products?isTrending=true&limit=4");
-        const json = await res.json();
-        if (json.data && json.data.length > 0) {
-          const mapped = json.data.map(
-            (p: { name: string; slug: string; images: string[] }) => ({
-              name: p.name.toUpperCase(),
-              slug: `product/${p.slug}`,
-              image: p.images[0],
-            })
-          );
-          setCategories(mapped);
-          return;
-        }
-      } catch {
-        // fall through
-      }
-
-      // 3. Last resort: hardcoded fallback
-      setCategories(FALLBACK_CATEGORIES);
     }
 
-    fetchTrending();
+    if (!initialCategories || initialCategories.length === 0) {
+      fetchTrending();
+    }
   }, [initialCategories]);
 
-  if (categories.length === 0) return null; // still loading
-
   return (
-    <section ref={containerRef} className="relative bg-white w-full overflow-hidden">
-      {/* Scroll-triggered Black Overlay */}
-      <div
-        className={`absolute inset-0 z-20 bg-black/25 backdrop-blur-md text-white flex flex-col items-center justify-center transition-all duration-700 ease-in-out ${
-          fadeOut ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"
-        }`}
-      >
-        {hasTriggered && (
-          <h2 className="text-xl md:text-3xl font-light tracking-[0.25em] text-white uppercase animate-tracking-in-expand select-none">
-            TRENDING NOW
+    <section className="relative bg-white w-full py-6 md:py-10">
+      {/* Section Header */}
+      <div className="px-4 md:px-12 mb-6 flex items-center justify-between">
+        <div>
+          <h2 className="text-sm md:text-base font-bold tracking-[0.2em] text-neutral-900 uppercase">
+            TRENDING CATEGORIES
           </h2>
+          <p className="text-[11px] text-neutral-500 tracking-wider mt-0.5">
+            Explore our full range of luxury menswear
+          </p>
+        </div>
+
+        {/* Desktop / Mobile Slider Arrows */}
+        {categories.length > 2 && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleScroll("left")}
+              disabled={!canScrollLeft}
+              className="w-8 h-8 rounded-full border border-neutral-300 flex items-center justify-center bg-white hover:bg-black hover:text-white active:scale-95 transition-all disabled:opacity-30 disabled:pointer-events-none cursor-pointer shadow-sm"
+              aria-label="Previous"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => handleScroll("right")}
+              disabled={!canScrollRight}
+              className="w-8 h-8 rounded-full border border-neutral-300 flex items-center justify-center bg-white hover:bg-black hover:text-white active:scale-95 transition-all disabled:opacity-30 disabled:pointer-events-none cursor-pointer shadow-sm"
+              aria-label="Next"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
         )}
-        <div className="h-[1px] w-8 bg-white/40 mt-3" />
       </div>
 
-      {/* Slider Nav Arrows */}
-      {categories.length > 4 && (
-        <div className="absolute top-4 right-4 z-30 flex gap-2">
-          <button
-            onClick={() => handleScroll("left")}
-            disabled={!canScrollLeft}
-            className="w-9 h-9 rounded-full border border-white/40 flex items-center justify-center bg-black/30 backdrop-blur-sm hover:bg-black/50 active:scale-95 transition-all disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
-            aria-label="Previous"
-          >
-            <ChevronLeft className="w-4 h-4 text-white" />
-          </button>
-          <button
-            onClick={() => handleScroll("right")}
-            disabled={!canScrollRight}
-            className="w-9 h-9 rounded-full border border-white/40 flex items-center justify-center bg-black/30 backdrop-blur-sm hover:bg-black/50 active:scale-95 transition-all disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
-            aria-label="Next"
-          >
-            <ChevronRight className="w-4 h-4 text-white" />
-          </button>
-        </div>
-      )}
-
+      {/* Horizontal Carousel for All Categories */}
       <div
         ref={sliderRef}
-        className="flex overflow-x-auto scroll-smooth scrollbar-none snap-x snap-mandatory w-full"
+        className="flex overflow-x-auto scroll-smooth scrollbar-none snap-x snap-mandatory px-4 md:px-12 gap-3 md:gap-4 w-full pb-2"
       >
         {categories.map((cat) => (
           <Link
             key={cat.slug}
             href={normalizeHref(cat.slug)}
-            className="group relative block w-1/2 md:w-1/4 shrink-0 snap-start"
+            className="group relative block w-[42vw] sm:w-[30vw] md:w-[22vw] lg:w-[18vw] shrink-0 snap-start rounded-lg overflow-hidden"
           >
-            <div className="relative aspect-[3/4] overflow-hidden bg-muted w-full">
+            <div className="relative aspect-[3/4] overflow-hidden bg-neutral-100 w-full rounded-lg">
               <Image
                 src={cat.image}
                 alt={cat.name}
                 fill
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-                sizes="(max-width: 768px) 50vw, 25vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-108"
+                sizes="(max-width: 768px) 42vw, 20vw"
               />
-              {/* Gradient Overlay for text contrast */}
-              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/35 transition-colors duration-300" />
-              {/* Centered label */}
-              <div className="absolute inset-0 flex items-center justify-center p-4">
-                <span className="text-white text-xs md:text-sm font-bold tracking-[0.2em] uppercase border-b border-transparent group-hover:border-white pb-0.5 transition-all duration-300">
+              {/* Dark Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent group-hover:from-black/90 transition-colors duration-300" />
+              
+              {/* Category Title Label */}
+              <div className="absolute inset-x-0 bottom-0 p-3.5 text-center flex flex-col items-center justify-end">
+                <span className="text-white text-xs md:text-sm font-bold tracking-[0.18em] uppercase drop-shadow-md">
                   {cat.name}
+                </span>
+                <span className="text-[9px] text-white/80 font-medium tracking-widest mt-1 uppercase border-b border-white/40 pb-0.5 group-hover:border-white transition-all">
+                  Shop Now →
                 </span>
               </div>
             </div>
