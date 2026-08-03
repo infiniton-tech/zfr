@@ -61,7 +61,7 @@ export function HeroSlider({ heroes, compact = false, intervalMs = 5000 }: HeroS
 
   return (
     <div
-      className={`relative w-full overflow-hidden ${compact ? "aspect-[3/4] bg-neutral-100" : "h-screen"}`}
+      className={`relative w-full overflow-hidden ${compact ? "aspect-[4/5] sm:aspect-[3/4] min-h-[440px] max-h-[600px] bg-neutral-900" : "h-screen"}`}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onTouchStart={handleTouchStart}
@@ -72,8 +72,8 @@ export function HeroSlider({ heroes, compact = false, intervalMs = 5000 }: HeroS
         return (
           <div
             key={i}
-            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-              active ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
+            className={`absolute inset-0 transition-all duration-700 ease-in-out ${
+              active ? "opacity-100 z-10 visible" : "opacity-0 z-0 invisible pointer-events-none hidden"
             }`}
             aria-hidden={!active}
           >
@@ -84,11 +84,18 @@ export function HeroSlider({ heroes, compact = false, intervalMs = 5000 }: HeroS
                   alt={hero.title}
                   className="object-cover w-full h-full"
                 />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/50 pointer-events-none" />
-                <div className="absolute inset-x-0 bottom-0 pb-8 flex flex-col items-center text-white text-center px-4">
-                  <h2 className="text-lg font-light tracking-[0.15em] drop-shadow uppercase">{hero.title}</h2>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/20 pointer-events-none" />
+                <div className="absolute inset-x-0 bottom-0 pb-10 flex flex-col items-center text-white text-center px-6">
+                  <h2 className="text-xl font-semibold tracking-[0.2em] drop-shadow-md uppercase text-white mb-1">
+                    {hero.title}
+                  </h2>
+                  {hero.subtitle && (
+                    <p className="text-xs font-light text-white/90 tracking-wider mb-3 line-clamp-2 max-w-xs">
+                      {hero.subtitle}
+                    </p>
+                  )}
                   {hero.ctaText && (
-                    <span className="mt-2 inline-block bg-white text-black text-[10px] font-medium tracking-[0.2em] px-5 py-2 uppercase">
+                    <span className="inline-block bg-white text-black text-[11px] font-bold tracking-[0.2em] px-6 py-2.5 rounded-sm shadow-lg uppercase transition-all active:scale-95">
                       {hero.ctaText}
                     </span>
                   )}

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Logo } from "@/components/shared/Logo";
 
 interface WelcomeSplashProps {
   preloadImages?: string[];
@@ -12,7 +11,7 @@ export function WelcomeSplash({ preloadImages }: WelcomeSplashProps) {
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
-    // Preload provided images during splash
+    // Preload key images in background
     if (preloadImages && preloadImages.length > 0) {
       preloadImages.forEach((src) => {
         if (!src) return;
@@ -21,49 +20,68 @@ export function WelcomeSplash({ preloadImages }: WelcomeSplashProps) {
       });
     }
 
-    // Prevent scrolling while splash screen is active
-    document.body.style.overflow = "hidden";
+    // Force scroll to top on mount
+    if (typeof window !== "undefined") {
+      window.scrollTo(0, 0);
+    }
 
-    // Start fade out animation after 1.8 seconds
-    const fadeTimer = setTimeout(() => {
+    // Start fade-out after 1.8 seconds
+    const exitTimer = setTimeout(() => {
       setFadeOut(true);
     }, 1800);
 
-    // Completely unmount after 2.3 seconds
+    // Unmount after fade-out finishes (2.4s total)
     const unmountTimer = setTimeout(() => {
       setVisible(false);
-      document.body.style.overflow = "";
-    }, 2300);
+      if (typeof window !== "undefined") {
+        window.scrollTo(0, 0);
+      }
+    }, 2400);
 
     return () => {
-      clearTimeout(fadeTimer);
+      clearTimeout(exitTimer);
       clearTimeout(unmountTimer);
-      document.body.style.overflow = "";
     };
-  }, []);
+  }, [preloadImages]);
 
   if (!visible) return null;
 
   return (
     <div
-      className={`fixed inset-0 z-[100] bg-black text-white flex flex-col items-center justify-center transition-opacity duration-500 ease-in-out ${
+      className={`fixed inset-0 z-[9999] bg-neutral-950 text-white flex flex-col items-center justify-between py-16 px-6 select-none transition-opacity duration-600 ease-in-out ${
         fadeOut ? "opacity-0 pointer-events-none" : "opacity-100"
       }`}
     >
-      <div className="text-center space-y-4 px-6 select-none">
-        <h1 className="animate-tracking-in-expand">
-          <img src="/logoo.png" alt="ZFR" className="h-16 md:h-24 mx-auto invert" />
-        </h1>
-        <div className="h-[1px] w-12 bg-white/40 mx-auto" />
-        <p className="text-xs md:text-sm font-light tracking-[0.4em] uppercase text-neutral-400">
-          Welcome to the Storefront
+      {/* Top Subtitle */}
+      <div className="text-[10px] md:text-xs font-light tracking-[0.4em] uppercase text-neutral-400">
+        DHAKA • EST. 2026
+      </div>
+
+      {/* Center: BIG ZFR Logo & Text */}
+      <div className="flex flex-col items-center gap-6 text-center">
+        <div className="relative">
+          <img
+            src="/logoo.png"
+            alt="ZFR"
+            className="h-32 sm:h-44 md:h-52 w-auto invert drop-shadow-[0_15px_35px_rgba(255,255,255,0.25)] animate-pulse"
+          />
+        </div>
+
+        <div className="w-20 h-[1px] bg-gradient-to-r from-transparent via-white/50 to-transparent my-1" />
+
+        <p className="text-xs md:text-sm font-light tracking-[0.4em] uppercase text-neutral-300">
+          High Fashion Menswear
         </p>
       </div>
 
-      {/* Premium loader at the bottom */}
-      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
-        <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-        <span className="text-[9px] tracking-[0.2em] text-neutral-500 uppercase">Loading Experience</span>
+      {/* Bottom Progress Indicator */}
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-40 h-[2px] bg-neutral-800 rounded-full overflow-hidden relative">
+          <div className="h-full bg-white rounded-full animate-pulse w-full" />
+        </div>
+        <span className="text-[9px] text-neutral-500 tracking-[0.25em] uppercase">
+          Welcome to ZFR
+        </span>
       </div>
     </div>
   );

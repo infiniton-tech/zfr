@@ -6,6 +6,28 @@ async function seed() {
   await connectDB();
   console.log("Connected to MongoDB");
 
+  const cloudinaryUrls: Record<string, string> = {
+    "navy_embroidered_panjabi": "https://res.cloudinary.com/efroakkc/image/upload/v1785776731/zfr-products/dikrostxwhlsrksdv5ly.jpg",
+    "emerald_festive_panjabi": "https://res.cloudinary.com/efroakkc/image/upload/v1785776735/zfr-products/fwpbuydbqif78u49e2dr.jpg",
+    "maroon_silk_panjabi": "https://res.cloudinary.com/efroakkc/image/upload/v1785776739/zfr-products/aychgo8euiprtvwmbzn4.jpg",
+    "black_designer_panjabi": "https://res.cloudinary.com/efroakkc/image/upload/v1785776742/zfr-products/uvuagatn2gswhht0wtow.jpg",
+    "emerald_green_linen_shirt": "https://res.cloudinary.com/efroakkc/image/upload/v1785776745/zfr-products/ke4i087myzhbe9tz5ztb.jpg",
+    "navy_white_stripe_shirt": "https://res.cloudinary.com/efroakkc/image/upload/v1785776747/zfr-products/kmgshokcdafgwvqidwc4.jpg",
+    "burgundy_floral_panjabi": "https://res.cloudinary.com/efroakkc/image/upload/v1785776750/zfr-products/a21zww9mav7etncddjcr.jpg",
+    "white_embroidered_panjabi": "https://res.cloudinary.com/efroakkc/image/upload/v1785776754/zfr-products/wrdcuaoqczg4xqqn95vw.jpg",
+    "chocolate_brown_shirt": "https://res.cloudinary.com/efroakkc/image/upload/v1785776759/zfr-products/b73btg98nngmsyqgvmmh.jpg",
+    "rusty_orange_shirt": "https://res.cloudinary.com/efroakkc/image/upload/v1785776762/zfr-products/utvgjpx8odryikosagsa.jpg",
+    "sand_beige_shirt": "https://res.cloudinary.com/efroakkc/image/upload/v1785776764/zfr-products/an0fhi7tvycftc8qt6el.jpg",
+    "dark_plum_shirt": "https://res.cloudinary.com/efroakkc/image/upload/v1785776766/zfr-products/ygymi9es8l4og7d26eoo.jpg",
+    "black_check_shirt": "https://res.cloudinary.com/efroakkc/image/upload/v1785776767/zfr-products/zrivdlpgxcexvbdchcaj.jpg",
+    "crimson_red_plaid_shirt": "https://res.cloudinary.com/efroakkc/image/upload/v1785776769/zfr-products/lon68bhgmnpyyzzkucm2.jpg",
+    "charcoal_grey_pant": "https://res.cloudinary.com/efroakkc/image/upload/v1785776770/zfr-products/n8gq3f86vlzeirxmwyev.jpg",
+    "off_white_panjabi": "https://res.cloudinary.com/efroakkc/image/upload/v1785776772/zfr-products/ob44jln1ulrtok777won.jpg",
+    "togetherness_banner": "https://res.cloudinary.com/efroakkc/image/upload/v1785776775/zfr-products/x5iiyahtguc3u01qgp3s.jpg"
+  };
+
+  const img = (key: string, fallback: string) => cloudinaryUrls[key] || fallback;
+
   // Clear existing data
   await Category.deleteMany({});
   await Product.deleteMany({});
@@ -17,42 +39,16 @@ async function seed() {
   await StoreSetting.deleteMany({});
   console.log("Cleared existing data");
 
-  // ===== CATEGORIES =====
-  const womanClothing = await Category.create({ name: "Clothing", slug: "clothing", gender: "woman", sortOrder: 1 });
-  const womanShoes = await Category.create({ name: "Shoes", slug: "shoes", gender: "woman", sortOrder: 2 });
-  const womanBags = await Category.create({ name: "Bags", slug: "bags", gender: "woman", sortOrder: 3 });
-  const womanAccessories = await Category.create({ name: "Accessories", slug: "accessories", gender: "woman", sortOrder: 4 });
-
+  // ===== CATEGORIES (MEN ONLY) =====
   const manClothing = await Category.create({ name: "Clothing", slug: "clothing-man", gender: "man", sortOrder: 1 });
-  const manShoes = await Category.create({ name: "Shoes", slug: "shoes-man", gender: "man", sortOrder: 2 });
-  const manAccessories = await Category.create({ name: "Accessories", slug: "accessories-man", gender: "man", sortOrder: 3 });
-
-  const kidsClothing = await Category.create({ name: "Clothing", slug: "clothing-kids", gender: "kids", sortOrder: 1 });
-  const kidsShoes = await Category.create({ name: "Shoes", slug: "shoes-kids", gender: "kids", sortOrder: 2 });
-
-  // Woman clothing subcategories
-  await Category.create([
-    { name: "Total Look", slug: "total-look", parentId: womanClothing._id, gender: "woman", sortOrder: 1 },
-    { name: "Dresses", slug: "dresses", parentId: womanClothing._id, gender: "woman", sortOrder: 2 },
-    { name: "Tops | Bodysuits", slug: "tops-bodysuits", parentId: womanClothing._id, gender: "woman", sortOrder: 3 },
-    { name: "T-shirts", slug: "t-shirts", parentId: womanClothing._id, gender: "woman", sortOrder: 4 },
-    { name: "Shirts | Blouses", slug: "shirts-blouses", parentId: womanClothing._id, gender: "woman", sortOrder: 5 },
-    { name: "Trousers", slug: "trousers", parentId: womanClothing._id, gender: "woman", sortOrder: 6 },
-    { name: "Jeans", slug: "jeans", parentId: womanClothing._id, gender: "woman", sortOrder: 7 },
-    { name: "Skirts", slug: "skirts", parentId: womanClothing._id, gender: "woman", sortOrder: 8 },
-    { name: "Shorts", slug: "shorts", parentId: womanClothing._id, gender: "woman", sortOrder: 9 },
-  ]);
-
-  // Man subcategories
-  const manShirts = await Category.create({ name: "Shirts", slug: "shirts-man", parentId: manClothing._id, gender: "man", sortOrder: 1 });
-  const manPants = await Category.create({ name: "Pant", slug: "pant-man", parentId: manClothing._id, gender: "man", sortOrder: 2 });
-  const manPanjabi = await Category.create({ name: "Panjabi", slug: "panjabi-man", parentId: manClothing._id, gender: "man", sortOrder: 3 });
-  
-  await Category.create([
-    { name: "T-shirts", slug: "t-shirts-man", parentId: manClothing._id, gender: "man", sortOrder: 4 },
-    { name: "Trousers", slug: "trousers-man", parentId: manClothing._id, gender: "man", sortOrder: 5 },
-    { name: "Jeans", slug: "jeans-man", parentId: manClothing._id, gender: "man", sortOrder: 6 },
-  ]);
+  const manPanjabi = await Category.create({ name: "Panjabi", slug: "panjabi-man", parentId: manClothing._id, gender: "man", sortOrder: 1 });
+  const manShirts = await Category.create({ name: "Shirts", slug: "shirts-man", parentId: manClothing._id, gender: "man", sortOrder: 2 });
+  const manPants = await Category.create({ name: "Pant", slug: "pant-man", parentId: manClothing._id, gender: "man", sortOrder: 3 });
+  const manTshirts = await Category.create({ name: "T-shirts", slug: "t-shirts-man", parentId: manClothing._id, gender: "man", sortOrder: 4 });
+  const manTrousers = await Category.create({ name: "Trousers", slug: "trousers-man", parentId: manClothing._id, gender: "man", sortOrder: 5 });
+  const manJeans = await Category.create({ name: "Jeans", slug: "jeans-man", parentId: manClothing._id, gender: "man", sortOrder: 6 });
+  const manShoes = await Category.create({ name: "Shoes", slug: "shoes-man", gender: "man", sortOrder: 7 });
+  const manAccessories = await Category.create({ name: "Accessories", slug: "accessories-man", gender: "man", sortOrder: 8 });
 
   console.log("Categories seeded");
 
@@ -185,14 +181,6 @@ async function seed() {
 
   // ===== REVIEWS (For rating stars) =====
   // Chocolate Brown: 5 stars
-  const prodChocolate = seededProducts.find(p => p.slug === "chocolate-brown-double-pocket-premium-shirt");
-  // Rusty Orange: 5 stars
-  const prodOrange = seededProducts.find(p => p.slug === "rusty-orange-double-pocket-premium-shirt");
-  // Dark Plum: 5 stars
-  const prodPlum = seededProducts.find(p => p.slug === "dark-plum-with-white-pinstripes-shirt");
-  // Black Check: 1 star
-  const prodBlackCheck = seededProducts.find(p => p.slug === "black-with-brown-and-beige-windowpane-check-pattern-shirt");
-
   const adminEmail = process.env.ADMIN_EMAIL || "admin@zfr.com";
   const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
   const passwordHash = await bcryptjs.hash(adminPassword, 12);
@@ -200,32 +188,17 @@ async function seed() {
   const adminUser = await User.create({
     email: adminEmail,
     passwordHash,
-    name: "ARJO Admin",
+    name: "ZFR Admin",
     role: "admin",
     wishlist: [],
     addresses: [],
   });
 
   const reviewsData = [];
-  if (prodChocolate) {
+  for (const p of seededProducts) {
     reviewsData.push(
-      { productId: prodChocolate._id, userId: adminUser._id, userName: "Sakib A.", rating: 5, comment: "Excellent fit and texture." },
-      { productId: prodChocolate._id, userId: adminUser._id, userName: "Miraz H.", rating: 5, comment: "Very premium." }
-    );
-  }
-  if (prodOrange) {
-    reviewsData.push(
-      { productId: prodOrange._id, userId: adminUser._id, userName: "Tanvir S.", rating: 5, comment: "Stunning color, highly recommended." }
-    );
-  }
-  if (prodPlum) {
-    reviewsData.push(
-      { productId: prodPlum._id, userId: adminUser._id, userName: "Rifat K.", rating: 5, comment: "Love the subtle pinstripes." }
-    );
-  }
-  if (prodBlackCheck) {
-    reviewsData.push(
-      { productId: prodBlackCheck._id, userId: adminUser._id, userName: "Naimur R.", rating: 1, comment: "Fit was too loose for me." }
+      { productId: p._id, userId: adminUser._id, userName: "Sakib A.", rating: 5, comment: "Exquisite fit and fabric quality!" },
+      { productId: p._id, userId: adminUser._id, userName: "Miraz H.", rating: 5, comment: "Highly recommended." }
     );
   }
 
@@ -235,13 +208,13 @@ async function seed() {
   // ===== HERO SECTIONS =====
   const heroSections = [
     {
-      title: "TOGETHERNESS",
-      subtitle: "They don't count years. They count memories...",
-      image: "/images/togetherness_banner.jpg",
-      leftImage: "/images/togetherness_banner.jpg",
-      rightImage: "/images/togetherness_banner.jpg",
-      ctaText: "SHOP THE LOOK",
-      ctaLink: "/man/shirts-man",
+      title: "ROYAL ELEGANCE",
+      subtitle: "Discover our latest high-fashion Panjabi and shirt collection crafted with distinction.",
+      image: img("navy_embroidered_panjabi", "/images/togetherness_banner.jpg"),
+      leftImage: img("navy_embroidered_panjabi", "/images/navy_embroidered_panjabi.jpg"),
+      rightImage: img("emerald_festive_panjabi", "/images/emerald_festive_panjabi.jpg"),
+      ctaText: "EXPLORE PANJABI COLLECTION",
+      ctaLink: "/man/panjabi-man",
       gender: "man",
       isActive: true,
       sortOrder: 1
@@ -252,13 +225,20 @@ async function seed() {
   console.log("Hero sections seeded");
 
   // ===== STORE SETTINGS =====
-  await StoreSetting.create({ key: "trending_section_position", value: "below-products" });
+  await StoreSetting.create([
+    { key: "trending_section_position", value: "below-products" },
+    { key: "whatsapp_number", value: "8801616764344" },
+    { key: "contact_phone", value: "+880 1616-764344" },
+    { key: "contact_email", value: "zfr3611@gmail.com" },
+    { key: "instagram_url", value: "https://www.instagram.com/zfr.official_?igsh=aHl3dmxrNDlhbXZv" },
+    { key: "facebook_url", value: "https://www.facebook.com/share/1BDhJYeRCu/" },
+  ]);
   console.log("Store settings seeded");
 
   // ===== NAV ITEMS =====
   const navItems = [
-    { label: "Woman", href: "/woman", position: "header-main", sortOrder: 1, isActive: true },
-    { label: "Man", href: "/man", position: "header-main", sortOrder: 2, isActive: true },
+    { label: "Man", href: "/man", position: "header-main", sortOrder: 1, isActive: true },
+    { label: "Woman", href: "/woman", position: "header-main", sortOrder: 2, isActive: true },
     { label: "Kids", href: "/kids", position: "header-main", sortOrder: 3, isActive: true },
   ];
   await NavItem.insertMany(navItems);

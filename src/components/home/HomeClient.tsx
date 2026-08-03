@@ -7,6 +7,7 @@ import { HeroSlider } from "./HeroSlider";
 import { TrendingGrid } from "./TrendingGrid";
 import { ProductSwiper } from "./ProductSwiper";
 import { CommunitySection } from "./CommunitySection";
+import { ProductCard } from "@/components/product/ProductCard";
 import { formatPrice } from "@/lib/utils";
 
 interface CategoryInfo {
@@ -76,32 +77,40 @@ export function HomeClient({ heroes, trending, position, products }: HomeClientP
 
   useEffect(() => {
     setMounted(true);
-    const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 300);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    if (typeof window !== "undefined") {
+      if ("scrollRestoration" in window.history) {
+        window.history.scrollRestoration = "manual";
+      }
+      window.scrollTo(0, 0);
+    }
   }, []);
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Derive tabs from product categories as fallback
-  const productTabs = useMemo(() => {
-    const seen = new Map<string, CategoryInfo>();
+  // Derive tabs from backend categories or products so all categories show cleanly
+  const tabs = useMemo(() => {
+    const productCategoriesMap = new Map<string, CategoryInfo>();
+
     products.forEach((p) => {
       p.categories?.forEach((c) => {
-        if (!seen.has(c.slug)) seen.set(c.slug, c);
+        if (!productCategoriesMap.has(c.slug)) {
+          productCategoriesMap.set(c.slug, c);
+        }
       });
     });
-    return Array.from(seen.values());
-  }, [products]);
 
-  // Use backend categories, fallback to product-derived
-  const tabs = allCategories.length > 0 ? allCategories : productTabs;
+    const productDerivedTabs = Array.from(productCategoriesMap.values());
+    const categoryList = allCategories.length > 0 ? allCategories : productDerivedTabs;
 
-  const activeTab = tabs.find((t) => t.slug === activeSlug) ?? tabs[0] ?? null;
+    // Filter out generic top-level parent container "clothing-man" so subcategories (Panjabi, Shirts, Pants, T-shirts, Trousers, Jeans, Shoes, Accessories) show clearly
+    const subCategories = categoryList.filter((c: CategoryInfo) => c.slug !== "clothing-man" && c.slug !== "clothing");
+
+    return [{ name: "ALL", slug: "all" }, ...subCategories];
+  }, [allCategories, products]);
+
+  const activeTab = tabs.find((t) => t.slug === activeSlug) ?? tabs[0];
 
   // Hide scroll hint after user interaction
   useEffect(() => {
@@ -122,23 +131,23 @@ export function HomeClient({ heroes, trending, position, products }: HomeClientP
   }, [tabs.length]);
 
   // Filter products by selected active category tab
-  const filteredProducts = activeTab
-    ? products.filter((p) => p.categories?.some((c) => c.slug === activeTab.slug))
-    : products;
+  const filteredProducts = !activeTab || activeTab.slug === "all"
+    ? products
+    : products.filter((p) => p.categories?.some((c) => c.slug === activeTab.slug));
 
-  const viewAllHref = activeTab
+  const viewAllHref = activeTab && activeTab.slug !== "all"
     ? `/${activeTab.gender || "man"}/${activeTab.slug}`
-    : "/";
+    : "/man";
 
   if (!mounted) return null;
 
   // Shared Category Pills Component
   const CategoryPills = ({ isMobile = false }: { isMobile?: boolean }) => (
-    <div className={`${isMobile ? "px-4" : "px-6 md:px-12"} py-6 flex flex-col items-center justify-center gap-3 w-full`}>
-      <div className="relative w-full max-w-full flex justify-center">
+    <div className={`${isMobile ? "px-3" : "px-6 md:px-12"} py-4 flex flex-col items-center justify-center gap-2.5 w-full`}>
+      <div className="w-full max-w-full">
         <div
           ref={isMobile ? tabsRef : undefined}
-          className="flex items-center justify-center gap-3 overflow-x-auto scrollbar-none scroll-smooth max-w-full pb-1"
+          className="flex items-center gap-2.5 overflow-x-auto scrollbar-none scroll-smooth max-w-full pb-1.5 px-1 snap-x snap-mandatory"
         >
           {tabs.map((tab) => {
             const isActive = activeTab?.slug === tab.slug;
@@ -146,10 +155,10 @@ export function HomeClient({ heroes, trending, position, products }: HomeClientP
               <button
                 key={tab.slug}
                 onClick={() => setActiveSlug(tab.slug)}
-                className={`px-6 py-2 rounded-full text-xs font-medium border tracking-wider whitespace-nowrap transition-all duration-300 ${
+                className={`snap-start px-5 py-2 rounded-full text-[11px] font-medium tracking-wider whitespace-nowrap transition-all duration-300 ${
                   isActive
-                    ? "bg-black text-white border-black shadow-sm"
-                    : "bg-white text-neutral-800 border-neutral-300 hover:border-neutral-800"
+                    ? "bg-black text-white border border-black shadow-md shadow-black/10 scale-102 font-bold"
+                    : "bg-neutral-50 text-neutral-700 border border-neutral-200/80 hover:border-neutral-800 hover:text-black"
                 }`}
               >
                 {tab.name}
@@ -157,57 +166,21 @@ export function HomeClient({ heroes, trending, position, products }: HomeClientP
             );
           })}
         </div>
-        {/* Scroll hint animation */}
-        {showScrollHint && tabs.length > 4 && (
-          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-white via-white/80 to-transparent pointer-events-none flex items-center justify-end pr-2">
-            <div className="flex flex-col items-center gap-0.5 animate-bounce">
-              <div className="w-5 h-5 rounded-full border border-neutral-300 flex items-center justify-center bg-white shadow-sm">
-                <div className="w-1.5 h-1.5 rounded-full bg-neutral-400" />
-              </div>
-              <span className="text-[8px] text-neutral-400 tracking-wider">SWIPE</span>
-            </div>
-          </div>
-        )}
       </div>
-      {/* Tab indicator dot */}
-      <div className="w-2 h-2 rounded-full bg-neutral-300" />
     </div>
   );
 
   // Shared Product Grid Component
   const ProductGrid = ({ isMobile = false }: { isMobile?: boolean }) => (
-    <div className={isMobile ? "px-4" : "px-6 md:px-12"}>
+    <div className={isMobile ? "px-3" : "px-6 md:px-12"}>
       {filteredProducts.length === 0 ? (
         <div className="text-center py-12 text-sm text-neutral-400">
           No products found in this category.
         </div>
       ) : (
-        <div className={`grid ${isMobile ? "grid-cols-2" : "grid-cols-2 md:grid-cols-4 lg:grid-cols-5"} gap-x-4 gap-y-6`}>
+        <div className={`grid ${isMobile ? "grid-cols-2 gap-3" : "grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-x-5 gap-y-8"}`}>
           {filteredProducts.map((product) => (
-            <div key={product._id} className="group flex flex-col">
-              <Link href={`/product/${product.slug}`} className="relative aspect-[3/4] w-full bg-neutral-50 overflow-hidden">
-                <img
-                  src={product.images[0]}
-                  alt={product.name}
-                  className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-103"
-                />
-              </Link>
-              <div className="mt-2 flex flex-col text-left px-0.5">
-                <Link href={`/product/${product.slug}`} className="text-[13px] font-normal text-neutral-800 tracking-wide line-clamp-2 hover:text-black min-h-[36px] leading-snug">
-                  {product.name}
-                </Link>
-                <div className="flex text-xs leading-none mt-1">
-                  {Array.from({ length: 5 }).map((_, i) => {
-                    const starIndex = i + 1;
-                    const filled = product.rating === 0 || starIndex <= product.rating;
-                    return <span key={i} className={filled ? "text-[#FBBF24]" : "text-neutral-300"}>★</span>;
-                  })}
-                </div>
-                <span className="text-sm font-bold text-neutral-900 mt-1 font-sans">
-                  {formatPrice(product.price)}
-                </span>
-              </div>
-            </div>
+            <ProductCard key={product._id} product={product} />
           ))}
         </div>
       )}
@@ -261,17 +234,6 @@ export function HomeClient({ heroes, trending, position, products }: HomeClientP
         )}
         <CommunitySection />
       </div>
-
-      {/* Scroll To Top */}
-      {showScrollTop && (
-        <button
-          onClick={scrollToTop}
-          className="fixed bottom-36 right-4 z-40 md:hidden w-11 h-11 rounded-full bg-white border border-neutral-200 flex items-center justify-center shadow-md active:scale-95 transition-all text-neutral-800 cursor-pointer"
-          aria-label="Scroll to top"
-        >
-          <ArrowUp className="w-4 h-4" />
-        </button>
-      )}
     </>
   );
 }

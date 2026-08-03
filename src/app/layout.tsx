@@ -5,7 +5,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { SessionProvider } from "next-auth/react";
 import { BottomNav } from "@/components/layout/BottomNav";
-import { WhatsAppButton } from "@/components/shared/WhatsAppButton";
+import { SocialFloatingStack } from "@/components/shared/SocialFloatingStack";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -31,7 +31,7 @@ export default function RootLayout({
             <BottomNav />
           </Suspense>
           <Suspense fallback={null}>
-            <WhatsAppButton />
+            <SocialFloatingStack />
           </Suspense>
         </SessionProvider>
         <Toaster position="bottom-right" />
