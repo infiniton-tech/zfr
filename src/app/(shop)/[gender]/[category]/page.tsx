@@ -20,11 +20,24 @@ async function getProducts(gender: string, category: string) {
 
     let finalQuery = query;
     if (category) {
-      const catDoc = await Category.findOne({ slug: category }).lean();
+      const slugVariants = Array.from(new Set([
+        category,
+        `${category}-${gender}`,
+        category.replace(new RegExp(`-${gender}$`), ""),
+        "clothing-man", "panjabi-man", "shirts-man", "pant-man", "t-shirts-man", "trousers-man", "jeans-man", "shoes-man", "accessories-man"
+      ]));
+      const catDoc = await Category.findOne({
+        slug: { $in: slugVariants },
+        ...(gender ? { gender } : {}),
+      }).lean() || await Category.findOne({ slug: { $in: slugVariants } }).lean();
+
       if (catDoc) {
         const subCats = await Category.find({ parentId: catDoc._id }).lean();
         const catIds = [catDoc._id, ...subCats.map((c: any) => c._id)];
         finalQuery = { ...query, categoryIds: { $in: catIds } };
+      } else {
+        // Unknown category slug: show no products instead of silently leaking the whole department.
+        finalQuery = { ...query, categoryIds: { $in: [] } };
       }
     }
 
@@ -43,11 +56,21 @@ async function getProducts(gender: string, category: string) {
   }
 }
 
-async function getCategoryData(slug: string) {
+async function getCategoryData(slug: string, gender?: string) {
   try {
     await connection();
     await connectDB();
-    const cat = await Category.findOne({ slug }).lean();
+    const slugVariants = Array.from(new Set([
+      slug,
+      gender ? `${slug}-${gender}` : null,
+      slug.replace(new RegExp(`-${gender || "man"}$`), ""),
+    ].filter(Boolean) as string[]));
+
+    const cat = await Category.findOne({
+      slug: { $in: slugVariants },
+      ...(gender ? { gender } : {}),
+    }).lean() || await Category.findOne({ slug: { $in: slugVariants } }).lean();
+
     if (!cat) return null;
 
     let relatedCategories = [];
@@ -99,7 +122,7 @@ export default async function ProductListingPage({
 
 async function ProductListingWrapper({ gender, category }: { gender: string; category: string }) {
   const { data: products, meta } = await getProducts(gender, category);
-  const catData = await getCategoryData(category);
+  const catData = await getCategoryData(category, gender);
 
   const categoryName = catData?.category?.name || category.replace(/-/g, " ").toUpperCase();
   const relatedCategories = catData?.relatedCategories || [];

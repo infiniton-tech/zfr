@@ -12,7 +12,14 @@ export async function GET(_req: Request, { params }: { params: Promise<{ identif
   try {
     await connectDB();
     const { identifier } = await params;
-    const query = isObjectId(identifier) ? { _id: identifier } : { slug: identifier };
+    const slugVariants = [
+      identifier,
+      `${identifier}-man`,
+      `${identifier}-woman`,
+      `${identifier}-kids`,
+      identifier.replace(/-(man|woman|kids)$/i, ""),
+    ];
+    const query = isObjectId(identifier) ? { _id: identifier } : { slug: { $in: slugVariants } };
     const category = await Category.findOne(query).lean();
     if (!category) {
       return NextResponse.json({ error: { code: "NOT_FOUND", message: "Category not found" } }, { status: 404 });

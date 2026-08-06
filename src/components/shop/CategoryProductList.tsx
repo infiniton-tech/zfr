@@ -281,19 +281,23 @@ export function CategoryProductList({
         {/* Category Chips / Navigation */}
         {relatedCategories.length > 0 && (
           <div className="flex items-center gap-2 overflow-x-auto pt-4 pb-1 scrollbar-hide">
-            {relatedCategories.map((cat) => (
-              <Link
-                key={cat._id}
-                href={`/${gender}/${cat.slug}`}
-                className={`shrink-0 px-4 py-2 text-[10px] font-medium tracking-wider border transition-colors ${
-                  cat.slug === category
-                    ? "bg-black text-white border-black"
-                    : "bg-white text-foreground border-border hover:border-foreground"
-                }`}
-              >
-                {cat.name.toUpperCase()}
-              </Link>
-            ))}
+            {relatedCategories.map((cat) => {
+              const isActive = cat.slug === category ||
+                cat.slug.replace(new RegExp(`-${gender}$`), "") === category.replace(new RegExp(`-${gender}$`), "");
+              return (
+                <Link
+                  key={cat._id}
+                  href={`/${gender}/${cat.slug}`}
+                  className={`shrink-0 px-4 py-2 text-[10px] font-medium tracking-wider border transition-colors ${
+                    isActive
+                      ? "bg-black text-white border-black"
+                      : "bg-white text-foreground border-border hover:border-foreground"
+                  }`}
+                >
+                  {cat.name.toUpperCase()}
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>

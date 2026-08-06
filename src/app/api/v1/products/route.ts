@@ -34,11 +34,18 @@ export async function GET(request: Request) {
     let finalQuery = query;
     if (category) {
       const cats = await import("@/models").then((m) => m.Category);
-      const catDoc = await cats.findOne({ slug: category }).lean();
+      const slugVariants = Array.from(new Set([
+        category,
+        gender ? `${category}-${gender}` : null,
+        category.replace(new RegExp(`-${gender || "man"}$`), ""),
+      ].filter(Boolean) as string[]));
+      const catDoc = await cats.findOne({ slug: { $in: slugVariants } }).lean();
       if (catDoc) {
         const subCats = await cats.find({ parentId: catDoc._id }).lean();
         const catIds = [catDoc._id, ...subCats.map((c) => c._id)];
         finalQuery = { ...query, categoryIds: { $in: catIds } };
+      } else {
+        finalQuery = { ...query, categoryIds: { $in: [] } };
       }
     }
 

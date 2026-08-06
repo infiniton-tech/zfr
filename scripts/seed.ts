@@ -40,15 +40,15 @@ async function seed() {
   console.log("Cleared existing data");
 
   // ===== CATEGORIES (MEN ONLY) =====
-  const manClothing = await Category.create({ name: "Clothing", slug: "clothing-man", gender: "man", sortOrder: 1 });
-  const manPanjabi = await Category.create({ name: "Panjabi", slug: "panjabi-man", parentId: manClothing._id, gender: "man", sortOrder: 1 });
-  const manShirts = await Category.create({ name: "Shirts", slug: "shirts-man", parentId: manClothing._id, gender: "man", sortOrder: 2 });
-  const manPants = await Category.create({ name: "Pant", slug: "pant-man", parentId: manClothing._id, gender: "man", sortOrder: 3 });
-  const manTshirts = await Category.create({ name: "T-shirts", slug: "t-shirts-man", parentId: manClothing._id, gender: "man", sortOrder: 4 });
-  const manTrousers = await Category.create({ name: "Trousers", slug: "trousers-man", parentId: manClothing._id, gender: "man", sortOrder: 5 });
-  const manJeans = await Category.create({ name: "Jeans", slug: "jeans-man", parentId: manClothing._id, gender: "man", sortOrder: 6 });
-  const manShoes = await Category.create({ name: "Shoes", slug: "shoes-man", gender: "man", sortOrder: 7 });
-  const manAccessories = await Category.create({ name: "Accessories", slug: "accessories-man", gender: "man", sortOrder: 8 });
+  const manClothing = await Category.create({ name: "Clothing", slug: "clothing-man", gender: "man", image: "/images/categories/clothing.jpg", sortOrder: 1 });
+  const manPanjabi = await Category.create({ name: "Panjabi", slug: "panjabi-man", parentId: manClothing._id, gender: "man", image: "/images/categories/panjabi.jpg", sortOrder: 1 });
+  const manShirts = await Category.create({ name: "Shirts", slug: "shirts-man", parentId: manClothing._id, gender: "man", image: "/images/categories/shirts.jpg", sortOrder: 2 });
+  const manPants = await Category.create({ name: "Pant", slug: "pant-man", parentId: manClothing._id, gender: "man", image: "/images/categories/pants.jpg", sortOrder: 3 });
+  const manTshirts = await Category.create({ name: "T-shirts", slug: "t-shirts-man", parentId: manClothing._id, gender: "man", image: "/images/categories/tshirts.jpg", sortOrder: 4 });
+  const manTrousers = await Category.create({ name: "Trousers", slug: "trousers-man", parentId: manClothing._id, gender: "man", image: "/images/categories/trousers.jpg", sortOrder: 5 });
+  const manJeans = await Category.create({ name: "Jeans", slug: "jeans-man", parentId: manClothing._id, gender: "man", image: "/images/categories/jeans.jpg", sortOrder: 6 });
+  const manShoes = await Category.create({ name: "Shoes", slug: "shoes-man", gender: "man", image: "/images/categories/shoes.jpg", sortOrder: 7 });
+  const manAccessories = await Category.create({ name: "Accessories", slug: "accessories-man", gender: "man", image: "/images/categories/accessories.jpg", sortOrder: 8 });
 
   console.log("Categories seeded");
 
@@ -62,12 +62,12 @@ async function seed() {
       price: 1790,
       gender: "man",
       categoryIds: [manClothing._id, manShirts._id],
-      images: ["/images/chocolate_brown_shirt.jpg"],
+      images: ["/images/products/chocolate_brown_shirt.jpg"],
       isNewArrival: true,
       isTrending: true,
       stockQuantity: 50,
       sizes: [{ name: "S", inStock: true }, { name: "M", inStock: true }, { name: "L", inStock: true }, { name: "XL", inStock: true }],
-      colors: [{ name: "Chocolate Brown", hex: "#3D2314", image: "/images/chocolate_brown_shirt.jpg" }]
+      colors: [{ name: "Chocolate Brown", hex: "#3D2314", image: "/images/products/chocolate_brown_shirt.jpg" }]
     },
     {
       name: "Rusty Orange Double Pocket Premium Shirt",
@@ -77,12 +77,12 @@ async function seed() {
       price: 1790,
       gender: "man",
       categoryIds: [manClothing._id, manShirts._id],
-      images: ["/images/rusty_orange_shirt.jpg"],
+      images: ["/images/products/rusty_orange_shirt.jpg"],
       isNewArrival: true,
       isTrending: true,
       stockQuantity: 40,
       sizes: [{ name: "S", inStock: true }, { name: "M", inStock: true }, { name: "L", inStock: true }, { name: "XL", inStock: true }],
-      colors: [{ name: "Rusty Orange", hex: "#C05A32", image: "/images/rusty_orange_shirt.jpg" }]
+      colors: [{ name: "Rusty Orange", hex: "#C05A32", image: "/images/products/rusty_orange_shirt.jpg" }]
     },
     {
       name: "Sand Beige With Light Brown And White Stripes Shirt",
@@ -92,12 +92,12 @@ async function seed() {
       price: 1590,
       gender: "man",
       categoryIds: [manClothing._id, manShirts._id],
-      images: ["/images/sand_beige_shirt.jpg"],
+      images: ["/images/products/sand_beige_shirt.jpg"],
       isNewArrival: true,
       isTrending: true,
       stockQuantity: 30,
       sizes: [{ name: "M", inStock: true }, { name: "L", inStock: true }, { name: "XL", inStock: true }],
-      colors: [{ name: "Sand Beige Striped", hex: "#D4C5B9", image: "/images/sand_beige_shirt.jpg" }]
+      colors: [{ name: "Sand Beige Striped", hex: "#D4C5B9", image: "/images/products/sand_beige_shirt.jpg" }]
     },
     {
       name: "Dark Plum With White Pinstripes Shirt",
@@ -107,12 +107,12 @@ async function seed() {
       price: 1790,
       gender: "man",
       categoryIds: [manClothing._id, manShirts._id],
-      images: ["/images/dark_plum_shirt.jpg"],
+      images: ["/images/products/dark_plum_shirt.jpg"],
       isNewArrival: true,
       isTrending: true,
       stockQuantity: 35,
       sizes: [{ name: "S", inStock: true }, { name: "M", inStock: true }, { name: "L", inStock: true }, { name: "XL", inStock: true }],
-      colors: [{ name: "Dark Plum", hex: "#4C2B36", image: "/images/dark_plum_shirt.jpg" }]
+      colors: [{ name: "Dark Plum", hex: "#4C2B36", image: "/images/products/dark_plum_shirt.jpg" }]
     },
     {
       name: "Black With Brown And Beige Windowpane Check Pattern Shirt",
@@ -122,12 +122,12 @@ async function seed() {
       price: 1790,
       gender: "man",
       categoryIds: [manClothing._id, manShirts._id],
-      images: ["/images/black_check_shirt.jpg"],
+      images: ["/images/products/black_check_shirt.jpg"],
       isNewArrival: true,
       isTrending: true,
       stockQuantity: 45,
       sizes: [{ name: "S", inStock: true }, { name: "M", inStock: true }, { name: "L", inStock: true }, { name: "XL", inStock: true }],
-      colors: [{ name: "Black Check", hex: "#1A1A1A", image: "/images/black_check_shirt.jpg" }]
+      colors: [{ name: "Black Check", hex: "#1A1A1A", image: "/images/products/black_check_shirt.jpg" }]
     },
     {
       name: "Crimson Red with White Plaid Double Pocket Premium Shirt",
@@ -137,12 +137,12 @@ async function seed() {
       price: 1790,
       gender: "man",
       categoryIds: [manClothing._id, manShirts._id],
-      images: ["/images/crimson_red_plaid_shirt.jpg"],
+      images: ["/images/products/crimson_red_plaid_shirt.jpg"],
       isNewArrival: true,
       isTrending: true,
       stockQuantity: 25,
       sizes: [{ name: "M", inStock: true }, { name: "L", inStock: true }, { name: "XL", inStock: true }],
-      colors: [{ name: "Crimson Red Plaid", hex: "#8A1C24", image: "/images/crimson_red_plaid_shirt.jpg" }]
+      colors: [{ name: "Crimson Red Plaid", hex: "#8A1C24", image: "/images/products/crimson_red_plaid_shirt.jpg" }]
     },
     {
       name: "Classic Charcoal Grey Pleated Pant",
@@ -152,12 +152,12 @@ async function seed() {
       price: 1990,
       gender: "man",
       categoryIds: [manClothing._id, manPants._id],
-      images: ["/images/charcoal_grey_pant.jpg"],
+      images: ["/images/products/charcoal_grey_pant.jpg"],
       isNewArrival: true,
       isTrending: true,
       stockQuantity: 40,
       sizes: [{ name: "30", inStock: true }, { name: "32", inStock: true }, { name: "34", inStock: true }, { name: "36", inStock: true }],
-      colors: [{ name: "Charcoal Grey", hex: "#4A4A4A", image: "/images/charcoal_grey_pant.jpg" }]
+      colors: [{ name: "Charcoal Grey", hex: "#4A4A4A", image: "/images/products/charcoal_grey_pant.jpg" }]
     },
     {
       name: "Off-White Premium Linen Panjabi",
@@ -167,12 +167,12 @@ async function seed() {
       price: 2490,
       gender: "man",
       categoryIds: [manClothing._id, manPanjabi._id],
-      images: ["/images/off_white_panjabi.jpg"],
+      images: ["/images/products/off_white_panjabi.jpg"],
       isNewArrival: true,
       isTrending: true,
       stockQuantity: 30,
       sizes: [{ name: "40", inStock: true }, { name: "42", inStock: true }, { name: "44", inStock: true }],
-      colors: [{ name: "Off-White", hex: "#F5F3E9", image: "/images/off_white_panjabi.jpg" }]
+      colors: [{ name: "Off-White", hex: "#F5F3E9", image: "/images/products/off_white_panjabi.jpg" }]
     }
   ];
 
