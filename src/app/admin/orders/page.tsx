@@ -22,6 +22,9 @@ interface Order {
   finalAmount: number;
   items: Array<{ name: string; quantity: number; price: number; size?: string; color?: string }>;
   userId?: { name: string; email: string };
+  customerName?: string;
+  customerEmail?: string;
+  customerPhone?: string;
   paymentStatus: string;
   createdAt: string;
 }
@@ -104,8 +107,11 @@ export default function AdminOrdersPage() {
                 <TableRow key={o._id}>
                   <TableCell className="font-semibold text-xs tracking-wider">{o.orderNumber}</TableCell>
                   <TableCell>
-                    <div className="text-sm font-medium">{o.userId?.name || "Guest"}</div>
-                    <div className="text-xs text-muted-foreground">{o.userId?.email || "—"}</div>
+                    <div className="text-sm font-medium">{o.customerName || o.userId?.name || "Guest"}</div>
+                    <div className="text-xs text-muted-foreground">{o.customerPhone || o.userId?.email || "—"}</div>
+                    {o.customerPhone && (o.customerEmail || o.userId?.email) && (
+                      <div className="text-xs text-muted-foreground">{o.customerEmail || o.userId?.email}</div>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="text-xs max-w-[200px] truncate">

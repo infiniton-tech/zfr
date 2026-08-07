@@ -43,14 +43,8 @@ export async function POST(request: Request) {
   try {
     await connectDB();
     
-    // 1. Authenticate user
+    // 1. Session is optional — guest checkout is allowed
     const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: { code: "UNAUTHORIZED", message: "You must be logged in to checkout" } },
-        { status: 401 }
-      );
-    }
 
     const body = await request.json();
     const { items, shippingAddress, billingAddress, shippingCost, discountAmount, paymentMethod } = body;
@@ -58,6 +52,18 @@ export async function POST(request: Request) {
     if (!items || items.length === 0 || !shippingAddress || !billingAddress) {
       return NextResponse.json(
         { error: { code: "VALIDATION_ERROR", message: "Missing required order information" } },
+        { status: 400 }
+      );
+    }
+
+    // Guests must provide contact details so the store can reach them
+    const customerName = (body.customerName || session?.user?.name || "").trim();
+    const customerEmail = (body.customerEmail || session?.user?.email || "").trim();
+    const customerPhone = (body.customerPhone || "").trim();
+
+    if (!customerName || !customerPhone) {
+      return NextResponse.json(
+        { error: { code: "VALIDATION_ERROR", message: "Name and phone number are required to place an order" } },
         { status: 400 }
       );
     }
@@ -121,7 +127,10 @@ export async function POST(request: Request) {
     // 4. Save order to database
     const order = await Order.create({
       orderNumber,
-      userId: session.user.id,
+      ...(session?.user?.id ? { userId: session.user.id } : {}),
+      customerName,
+      customerEmail,
+      customerPhone,
       items: pricedItems,
       shippingAddress,
       billingAddress,
@@ -138,7 +147,7 @@ export async function POST(request: Request) {
     const visitorId = body.visitorId || `vis_purchase_${Date.now()}`;
     await TrackingEvent.create({
       visitorId,
-      userId: session.user.id,
+      ...(session?.user?.id ? { userId: session.user.id } : {}),
       eventType: "purchase",
       metadata: {
         orderNumber,

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useCart } from "@/store/cart";
 import { Input } from "@/components/ui/input";
@@ -28,7 +27,6 @@ interface SavedAddress {
 export default function CheckoutPage() {
   const { items, getTotalPrice, clearCart } = useCart();
   const { data: session, status } = useSession();
-  const router = useRouter();
 
   const [step, setStep] = useState(0);
   const [completed, setCompleted] = useState(false);
@@ -62,14 +60,8 @@ export default function CheckoutPage() {
   const shippingCost = getShippingCost(city);
   const grandTotal = total + shippingCost;
 
-  // Redirect to login if unauthenticated
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      toast.error("Please log in to proceed with checkout");
-      router.push("/login?callbackUrl=/checkout");
-    }
-  }, [status, router]);
-
+  // Guest checkout is allowed — no login redirect. Logged-in users get
+  // their profile data pre-filled below.
   // Fetch saved addresses if logged in
   useEffect(() => {
     const fetchAddresses = async () => {
@@ -148,8 +140,8 @@ export default function CheckoutPage() {
   const handlePlaceOrder = async () => {
     setLoading(true);
     try {
-      // 1. Optionally save address to profile if checked
-      if (saveAddress && selectedAddressId === "new") {
+      // 1. Optionally save address to profile if checked (logged-in users only)
+      if (saveAddress && selectedAddressId === "new" && session?.user) {
         await fetch("/api/v1/users/addresses", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -181,6 +173,9 @@ export default function CheckoutPage() {
 
       const orderPayload = {
         items: orderItems,
+        customerName: `${firstName} ${lastName}`.trim(),
+        customerEmail: email,
+        customerPhone: phone,
         shippingAddress,
         billingAddress: shippingAddress,
         totalAmount: total,
@@ -244,12 +239,16 @@ export default function CheckoutPage() {
           Thank you for your order. Your order number is: <span className="font-semibold text-foreground">{orderNumber}</span>
         </p>
         <p className="text-xs text-muted-foreground mb-8 text-center">
-          You can track this order in your account dashboard.
+          {session?.user
+            ? "You can track this order in your account dashboard."
+            : "Please save your order number — we will contact you shortly to confirm delivery."}
         </p>
         <div className="flex gap-4">
-          <Link href="/orders" className="border border-black text-black text-xs font-medium tracking-[0.2em] px-8 py-3 hover:bg-neutral-50 transition-colors">
-            MY ORDERS
-          </Link>
+          {session?.user && (
+            <Link href="/orders" className="border border-black text-black text-xs font-medium tracking-[0.2em] px-8 py-3 hover:bg-neutral-50 transition-colors">
+              MY ORDERS
+            </Link>
+          )}
           <Link href="/" className="bg-black text-white text-xs font-medium tracking-[0.2em] px-8 py-3 hover:bg-black/90 transition-colors">
             CONTINUE SHOPPING
           </Link>

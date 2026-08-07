@@ -31,7 +31,11 @@ const AddressSchema = new Schema(
 const OrderSchema = new Schema<IOrderDocument>(
   {
     orderNumber: { type: String, required: true, unique: true, index: true },
-    userId: { type: Schema.Types.ObjectId as unknown as typeof String, ref: "User", required: true, index: true },
+    userId: { type: Schema.Types.ObjectId as unknown as typeof String, ref: "User", required: false, index: true },
+    // Guest contact details (also filled for logged-in users for a consistent admin view)
+    customerName: { type: String, required: true },
+    customerEmail: { type: String },
+    customerPhone: { type: String, required: true },
     items: [CartItemSchema],
     shippingAddress: { type: AddressSchema, required: true },
     billingAddress: { type: AddressSchema, required: true },

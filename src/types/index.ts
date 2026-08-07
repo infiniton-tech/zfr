@@ -127,7 +127,10 @@ export interface INavItem {
 export interface IOrder {
   _id: string;
   orderNumber: string;
-  userId: string;
+  userId?: string;
+  customerName: string;
+  customerEmail?: string;
+  customerPhone: string;
   items: ICartItem[];
   shippingAddress: IAddress;
   billingAddress: IAddress;
