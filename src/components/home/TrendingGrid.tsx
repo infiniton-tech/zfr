@@ -12,52 +12,9 @@ interface TrendingCategory {
   image: string;
 }
 
-const FALLBACK_CATEGORIES: TrendingCategory[] = [
-  {
-    name: "PANJABI",
-    slug: "man/panjabi-man",
-    image: "/images/navy_embroidered_panjabi.jpg",
-  },
-  {
-    name: "SHIRTS",
-    slug: "man/shirts-man",
-    image: "/images/emerald_green_linen_shirt.jpg",
-  },
-  {
-    name: "PANTS",
-    slug: "man/pant-man",
-    image: "/images/charcoal_grey_pant.jpg",
-  },
-  {
-    name: "T-SHIRTS",
-    slug: "man/t-shirts-man",
-    image: "/images/sand_beige_shirt.jpg",
-  },
-  {
-    name: "TROUSERS",
-    slug: "man/trousers-man",
-    image: "/images/charcoal_grey_pant.jpg",
-  },
-  {
-    name: "JEANS",
-    slug: "man/jeans-man",
-    image: "/images/navy_white_stripe_shirt.jpg",
-  },
-  {
-    name: "SHOES",
-    slug: "man/shoes-man",
-    image: "/images/chocolate_brown_shirt.jpg",
-  },
-  {
-    name: "ACCESSORIES",
-    slug: "man/accessories-man",
-    image: "/images/black_designer_panjabi.jpg",
-  },
-];
-
 export function TrendingGrid({ initialCategories }: { initialCategories?: TrendingCategory[] }) {
   const [categories, setCategories] = useState<TrendingCategory[]>(
-    initialCategories && initialCategories.length > 0 ? initialCategories : FALLBACK_CATEGORIES
+    initialCategories ?? []
   );
 
   const sliderRef = useRef<HTMLDivElement>(null);
@@ -108,7 +65,7 @@ export function TrendingGrid({ initialCategories }: { initialCategories?: Trendi
           return;
         }
       } catch {
-        // fall back to default categories
+        // keep empty — content comes only from the admin panel
       }
     }
 
@@ -116,6 +73,8 @@ export function TrendingGrid({ initialCategories }: { initialCategories?: Trendi
       fetchTrending();
     }
   }, [initialCategories]);
+
+  if (categories.length === 0) return null;
 
   return (
     <section className="relative bg-white w-full py-6 md:py-10">

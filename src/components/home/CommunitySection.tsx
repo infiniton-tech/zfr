@@ -9,19 +9,6 @@ interface Look {
   image: string;
 }
 
-const FALLBACK_LOOKS = [
-  { _id: "f1", image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=500&fit=crop&q=80" },
-  { _id: "f2", image: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&h=500&fit=crop&q=80" },
-  { _id: "f3", image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400&h=500&fit=crop&q=80" },
-  { _id: "f4", image: "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=400&h=500&fit=crop&q=80" },
-  { _id: "f5", image: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=400&h=500&fit=crop&q=80" },
-  { _id: "f6", image: "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=400&h=500&fit=crop&q=80" },
-  { _id: "f7", image: "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=400&h=500&fit=crop&q=80" },
-  { _id: "f8", image: "https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?w=400&h=500&fit=crop&q=80" },
-  { _id: "f9", image: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=400&h=500&fit=crop&q=80" },
-  { _id: "f10", image: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=500&fit=crop&q=80" },
-];
-
 export function CommunitySection() {
   const [looks, setLooks] = useState<Look[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,9 +19,9 @@ export function CommunitySection() {
         const res = await fetch("/api/v1/looks?limit=10");
         const json = await res.json();
         const data = json.data || [];
-        setLooks(data.length > 0 ? data : FALLBACK_LOOKS);
+        setLooks(data);
       } catch {
-        setLooks(FALLBACK_LOOKS);
+        setLooks([]);
       } finally {
         setLoading(false);
       }
@@ -42,7 +29,7 @@ export function CommunitySection() {
     fetchLooks();
   }, []);
 
-  if (loading) return null;
+  if (loading || looks.length === 0) return null;
 
   return (
     <section className="relative py-12 md:py-16">

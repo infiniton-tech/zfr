@@ -66,60 +66,6 @@ async function getCategoryData(slug: string) {
   }
 }
 
-const GENDER_FALLBACK: Record<string, Array<Record<string, string>>> = {
-  woman: [
-    {
-      title: "NEW IN",
-      subtitle: "Discover the latest arrivals",
-      leftImage: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=960&h=1080&fit=crop&q=80",
-      rightImage: "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=960&h=1080&fit=crop&q=80",
-      ctaText: "VIEW NOW",
-      ctaLink: "/woman/new-in",
-    },
-    {
-      title: "BASICS",
-      subtitle: "Timeless essentials for everyday",
-      image: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1920&h=1080&fit=crop&q=80",
-      ctaText: "VIEW NOW",
-      ctaLink: "/woman/basics",
-    },
-  ],
-  man: [
-    {
-      title: "NEW IN",
-      subtitle: "Fresh styles for him",
-      leftImage: "https://images.unsplash.com/photo-1617137968427-85924c800a22?w=960&h=1080&fit=crop&q=80",
-      rightImage: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=960&h=1080&fit=crop&q=80",
-      ctaText: "VIEW NOW",
-      ctaLink: "/man/new-in",
-    },
-    {
-      title: "BASICS",
-      subtitle: "Essential pieces for every man",
-      image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=1920&h=1080&fit=crop&q=80",
-      ctaText: "VIEW NOW",
-      ctaLink: "/man/basics",
-    },
-  ],
-  kids: [
-    {
-      title: "NEW IN",
-      subtitle: "Fun styles for the little ones",
-      leftImage: "https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=960&h=1080&fit=crop&q=80",
-      rightImage: "https://images.unsplash.com/photo-1507464098880-e367bc5d2c08?w=960&h=1080&fit=crop&q=80",
-      ctaText: "VIEW NOW",
-      ctaLink: "/kids/new-in",
-    },
-    {
-      title: "BASICS",
-      subtitle: "Comfortable everyday wear",
-      image: "https://images.unsplash.com/photo-1560243563-062bfc001d68?w=1920&h=1080&fit=crop&q=80",
-      ctaText: "VIEW NOW",
-      ctaLink: "/kids/basics",
-    },
-  ],
-};
-
 export default async function GenderPage({ params }: { params: Promise<{ gender: string }> }) {
   return (
     <div className="pt-[56px] pb-16 bg-white">
@@ -247,13 +193,19 @@ async function CategoriesWrapper({ gender }: { gender: string }) {
           <div key={cat._id} className="group flex flex-col">
             <Link href={`/${gender}/${cat.slug}`} className="block">
               <div className="relative aspect-[3/4] overflow-hidden bg-muted mb-3">
-                <Image
-                  src={cat.image || "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=600&h=800&fit=crop&q=80"}
-                  alt={cat.name}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  sizes="25vw"
-                />
+                {cat.image ? (
+                  <Image
+                    src={cat.image}
+                    alt={cat.name}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    sizes="25vw"
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-neutral-100 flex items-center justify-center">
+                    <span className="text-neutral-400 text-xs tracking-widest uppercase">{cat.name}</span>
+                  </div>
+                )}
               </div>
               <span className="text-xs font-medium tracking-wider uppercase block mb-1">{cat.name}</span>
             </Link>

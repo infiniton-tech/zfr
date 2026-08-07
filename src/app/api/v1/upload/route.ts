@@ -2,9 +2,6 @@ import { NextResponse } from "next/server";
 import { cloudinary } from "@/lib/cloudinary";
 import { v2 as cloudinarySdk } from "cloudinary";
 import { auth } from "@/lib/auth";
-import fs from "fs/promises";
-import path from "path";
-import crypto from "crypto";
 
 export async function POST(request: Request) {
   try {
@@ -28,13 +25,27 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Try Cloudinary first
-    try {
-      const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-      if (!cloudName || cloudName === "demo") {
-        throw new Error("Cloudinary is not configured or is set to demo");
-      }
+    // Upload to Cloudinary (no local-disk fallback: it does not persist on serverless hosts)
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+    if (
+      !cloudName ||
+      cloudName === "demo" ||
+      !process.env.CLOUDINARY_API_KEY ||
+      !process.env.CLOUDINARY_API_SECRET
+    ) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "CLOUDINARY_NOT_CONFIGURED",
+            message:
+              "Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET in the server environment.",
+          },
+        },
+        { status: 500 }
+      );
+    }
 
+    try {
       const result = await new Promise<{ secure_url: string; public_id: string }>(
         (resolve, reject) => {
           cloudinary.uploader
@@ -64,41 +75,16 @@ export async function POST(request: Request) {
       });
     } catch (cloudinaryError: unknown) {
       const cloudinaryMessage = cloudinaryError instanceof Error ? cloudinaryError.message : String(cloudinaryError);
-      console.warn("Cloudinary upload failed or not configured, falling back to local file storage...", cloudinaryMessage);
-
-      // Fallback: Save file to public/uploads
-      const uploadDir = path.join(process.cwd(), "public", "uploads");
-      
-      // Ensure the directory exists
-      await fs.mkdir(uploadDir, { recursive: true });
-
-      // Generate a safe unique filename
-      const hash = crypto.randomBytes(8).toString("hex");
-      const cleanFileName = file.name
-        .replace(/[^a-zA-Z0-9.-]/g, "_")
-        .replace(/_{2,}/g, "_");
-      const filename = `${Date.now()}-${hash}-${cleanFileName}`;
-      const filePath = path.join(uploadDir, filename);
-
-      // Write to disk
-      await fs.writeFile(filePath, buffer);
-
-      const fileUrl = `/uploads/${filename}`;
-      console.log(`Saved file locally to: ${filePath}`);
-
-      return NextResponse.json({
-        data: {
-          url: fileUrl,
-          secure_url: fileUrl,
-          public_id: filename,
-          publicId: filename,
-          source: "local",
+      console.error("Cloudinary upload failed:", cloudinaryMessage);
+      return NextResponse.json(
+        {
+          error: {
+            code: "CLOUDINARY_UPLOAD_FAILED",
+            message: `Upload to Cloudinary failed: ${cloudinaryMessage}`,
+          },
         },
-        warning: {
-          code: "LOCAL_FALLBACK",
-          message: "Cloudinary is not configured. File was saved locally and will not persist on serverless hosts.",
-        },
-      });
+        { status: 500 }
+      );
     }
   } catch (error: unknown) {
     console.error("Global upload handler failed:", error);

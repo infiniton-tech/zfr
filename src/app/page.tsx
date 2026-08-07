@@ -21,18 +21,6 @@ async function getHeroSections() {
   }
 }
 
-const FALLBACK_HEROES = [
-  {
-    title: "TOGETHERNESS",
-    subtitle: "They don't count years. They count memories...",
-    image: "/images/togetherness_banner.jpg",
-    leftImage: "/images/togetherness_banner.jpg",
-    rightImage: "/images/togetherness_banner.jpg",
-    ctaText: "SHOP THE LOOK",
-    ctaLink: "/man/shirts-man",
-  }
-];
-
 async function getTrendingCategories() {
   "use cache";
   cacheLife("seconds");
@@ -65,28 +53,7 @@ async function getTrendingCategories() {
       }));
     }
 
-    return [
-      {
-        name: "SHIRTS",
-        slug: "man/shirts-man",
-        image: "/images/chocolate_brown_shirt.jpg",
-      },
-      {
-        name: "PANT",
-        slug: "man/pant-man",
-        image: "/images/charcoal_grey_pant.jpg",
-      },
-      {
-        name: "PANJABI",
-        slug: "man/panjabi-man",
-        image: "/images/off_white_panjabi.jpg",
-      },
-      {
-        name: "NEW IN",
-        slug: "man/new-in",
-        image: "/images/rusty_orange_shirt.jpg",
-      }
-    ];
+    return [];
   } catch (error) {
     console.error("Failed to get trending categories:", error);
     return [];
@@ -172,17 +139,15 @@ export default async function HomePage() {
     getProductsWithRatings()
   ]);
 
-  const displayHeroes = heroes.length > 0
-    ? heroes.map((h: Record<string, string>) => ({
-        title: h.title,
-        subtitle: h.subtitle,
-        image: h.image,
-        leftImage: h.leftImage || h.image,
-        rightImage: h.rightImage,
-        ctaText: h.ctaText,
-        ctaLink: h.ctaLink,
-      }))
-      : FALLBACK_HEROES;
+  const displayHeroes = heroes.map((h: Record<string, string>) => ({
+    title: h.title,
+    subtitle: h.subtitle,
+    image: h.image,
+    leftImage: h.leftImage || h.image,
+    rightImage: h.rightImage,
+    ctaText: h.ctaText,
+    ctaLink: h.ctaLink,
+  }));
 
   // Gather all critical images to preload during splash screen
   const imagesToPreload: string[] = [];

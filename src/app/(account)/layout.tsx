@@ -24,9 +24,12 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
                 {item.label}
               </Link>
             ))}
-            <button className="w-full text-left px-4 py-3 text-sm tracking-wide text-red-600 hover:bg-muted transition-colors">
+            <Link
+              href="/logout"
+              className="block w-full text-left px-4 py-3 text-sm tracking-wide text-red-600 hover:bg-muted transition-colors"
+            >
               Log Out
-            </button>
+            </Link>
           </nav>
           {/* Content */}
           <div className="md:col-span-3">{children}</div>
