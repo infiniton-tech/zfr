@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cloudinary } from "@/lib/cloudinary";
 import { auth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 import { connectDB } from "@/lib/db";
 import { Product, Category, HeroSection, Look, TrendingItem, User } from "@/models";
 import fs from "fs/promises";
@@ -102,6 +103,14 @@ export async function POST(request: Request) {
       const uRes = await User.updateMany({}, { $set: { image: "" } });
       dbStats.users = uRes.modifiedCount || 0;
     }
+
+    logAudit(session, {
+      action: "delete",
+      entity: "media",
+      entityLabel: "all media",
+      summary: "Cleared all media and blanked image fields",
+      changes: { clearCloudinary, clearLocal, clearDatabase },
+    });
 
     return NextResponse.json({
       data: {

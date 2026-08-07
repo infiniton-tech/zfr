@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cloudinary } from "@/lib/cloudinary";
 import { auth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 import fs from "fs/promises";
 import path from "path";
 
@@ -85,6 +86,13 @@ export async function DELETE(request: Request) {
     if (source === "cloudinary") {
       const response = await cloudinary.uploader.destroy(publicId);
       if (response.result === "ok" || response.result === "not found") {
+        logAudit(session, {
+          action: "delete",
+          entity: "media",
+          entityId: publicId,
+          entityLabel: publicId,
+          summary: `Deleted media '${publicId}' from Cloudinary`,
+        });
         return NextResponse.json({ data: { success: true, result: response.result } });
       } else {
         return NextResponse.json({ error: { code: "CLOUDINARY_ERROR", message: `Failed to delete from Cloudinary: ${response.result}` } }, { status: 400 });
@@ -94,6 +102,13 @@ export async function DELETE(request: Request) {
       const filePath = path.join(process.cwd(), "public", "uploads", filename);
       try {
         await fs.unlink(filePath);
+        logAudit(session, {
+          action: "delete",
+          entity: "media",
+          entityId: filename,
+          entityLabel: filename,
+          summary: `Deleted local media file '${filename}'`,
+        });
         return NextResponse.json({ data: { success: true } });
       } catch (err: any) {
         if (err.code === "ENOENT") {

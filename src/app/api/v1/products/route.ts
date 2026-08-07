@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { auth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 import { Product } from "@/models";
 
 export async function GET(request: Request) {
@@ -80,6 +81,13 @@ export async function POST(request: Request) {
     await connectDB();
     const body = await request.json();
     const product = await Product.create(body);
+    logAudit(session, {
+      action: "create",
+      entity: "product",
+      entityId: String(product._id),
+      entityLabel: product.name,
+      summary: "Created product",
+    });
     return NextResponse.json({ data: product }, { status: 201 });
   } catch {
     return NextResponse.json({ error: { code: "INTERNAL_ERROR", message: "Failed to create product" } }, { status: 500 });

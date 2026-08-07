@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { auth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 import { TrendingItem } from "@/models";
 
 export async function GET() {
@@ -39,6 +40,13 @@ export async function POST(request: Request) {
       ctaLink,
       sortOrder: sortOrder ?? 0,
       isActive: isActive ?? true,
+    });
+    logAudit(session, {
+      action: "create",
+      entity: "trending",
+      entityId: String(item._id),
+      entityLabel: item.name,
+      summary: "Created trending item",
     });
     return NextResponse.json({ data: item }, { status: 201 });
   } catch {

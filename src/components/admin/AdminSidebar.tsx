@@ -15,6 +15,7 @@ import {
   Heart,
   TrendingUp,
   Settings,
+  History,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +31,7 @@ const navItems = [
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/media", label: "Media", icon: Image },
   { href: "/admin/parcel", label: "Parcel", icon: Truck },
+  { href: "/admin/activity", label: "Activity Log", icon: History },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 

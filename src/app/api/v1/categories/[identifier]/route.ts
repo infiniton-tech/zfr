@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { connectDB } from "@/lib/db";
 import { auth } from "@/lib/auth";
+import { logAudit, summarizeChanges } from "@/lib/audit";
 import { Category } from "@/models";
 
 function isObjectId(str: string) {
@@ -52,6 +53,14 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ identi
     }
     const category = await Category.findByIdAndUpdate(identifier, { $set: body }, { new: true }).lean();
     if (!category) return NextResponse.json({ error: { code: "NOT_FOUND", message: "Category not found" } }, { status: 404 });
+    logAudit(session, {
+      action: "update",
+      entity: "category",
+      entityId: String(category._id),
+      entityLabel: category.name,
+      summary: summarizeChanges(body),
+      changes: body,
+    });
     return NextResponse.json({ data: category });
   } catch (error) {
     console.error("PATCH Category error:", error);
@@ -71,7 +80,17 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ iden
     if (!isObjectId(identifier)) {
       return NextResponse.json({ error: { code: "BAD_REQUEST", message: "Delete requires an ObjectId" } }, { status: 400 });
     }
+    const category = await Category.findById(identifier).select("name").lean();
     await Category.deleteMany({ $or: [{ _id: identifier }, { parentId: identifier }] });
+    if (category) {
+      logAudit(session, {
+        action: "delete",
+        entity: "category",
+        entityId: identifier,
+        entityLabel: category.name,
+        summary: "Deleted category",
+      });
+    }
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: { code: "INTERNAL_ERROR", message: "Failed to delete category" } }, { status: 500 });

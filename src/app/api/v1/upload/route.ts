@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cloudinary } from "@/lib/cloudinary";
 import { v2 as cloudinarySdk } from "cloudinary";
 import { auth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 
 export async function POST(request: Request) {
   try {
@@ -63,6 +64,14 @@ export async function POST(request: Request) {
             .end(buffer);
         }
       );
+
+      logAudit(session, {
+        action: "create",
+        entity: "media",
+        entityId: result.public_id,
+        entityLabel: `${file.name} (${folder})`,
+        summary: `Uploaded to Cloudinary folder '${folder}'`,
+      });
 
       return NextResponse.json({
         data: {

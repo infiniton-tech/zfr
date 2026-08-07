@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { auth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 import { Category } from "@/models";
 
 export async function GET(request: Request) {
@@ -50,6 +51,13 @@ export async function POST(request: Request) {
       body.slug = body.slug.replace(/^\/+|\/+$/g, "").trim().toLowerCase();
     }
     const category = await Category.create(body);
+    logAudit(session, {
+      action: "create",
+      entity: "category",
+      entityId: String(category._id),
+      entityLabel: category.name,
+      summary: "Created category",
+    });
     return NextResponse.json({ data: category }, { status: 201 });
   } catch (error) {
     console.error("POST Category error:", error);
@@ -69,7 +77,15 @@ export async function DELETE(request: Request) {
     if (!ids || ids.length === 0) {
       return NextResponse.json({ error: { code: "VALIDATION_ERROR", message: "No IDs provided" } }, { status: 400 });
     }
+    const categories = await Category.find({ _id: { $in: ids } }).select("name").lean();
     const result = await Category.deleteMany({ _id: { $in: ids } });
+    logAudit(session, {
+      action: "delete",
+      entity: "category",
+      entityId: ids.join(", "),
+      entityLabel: categories.map((c) => c.name).join(", ") || undefined,
+      summary: `Deleted ${result.deletedCount ?? ids.length} categor${(result.deletedCount ?? ids.length) === 1 ? "y" : "ies"}`,
+    });
     return NextResponse.json({ data: { deleted: result.deletedCount } });
   } catch (error) {
     console.error("DELETE Categories error:", error);

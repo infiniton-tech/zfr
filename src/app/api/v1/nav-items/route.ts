@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { auth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 import { NavItem } from "@/models";
 
 export async function GET(request: Request) {
@@ -28,6 +29,13 @@ export async function POST(request: Request) {
     await connectDB();
     const body = await request.json();
     const item = await NavItem.create(body);
+    logAudit(session, {
+      action: "create",
+      entity: "nav-item",
+      entityId: String(item._id),
+      entityLabel: item.label,
+      summary: "Created nav item",
+    });
     return NextResponse.json({ data: item }, { status: 201 });
   } catch {
     return NextResponse.json({ error: { code: "INTERNAL_ERROR", message: "Failed to create nav item" } }, { status: 500 });

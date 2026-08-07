@@ -167,6 +167,21 @@ export interface ITrackingEvent {
   timestamp: string;
 }
 
+export interface IAuditLog {
+  _id: string;
+  actorId?: string;
+  actorName: string;
+  actorEmail: string;
+  action: "create" | "update" | "delete";
+  entity: string;
+  entityId?: string;
+  entityLabel?: string;
+  summary?: string;
+  changes?: Record<string, any>;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface PaginationMeta {
   page: number;
   limit: number;

@@ -17,6 +17,7 @@ const navItems = [
   { href: "/admin/users", label: "Users" },
   { href: "/admin/media", label: "Media" },
   { href: "/admin/parcel", label: "Parcel" },
+  { href: "/admin/activity", label: "Activity Log" },
 ];
 
 export function AdminHeader() {

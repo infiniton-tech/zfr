@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { auth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 import { StoreSetting } from "@/models";
 
 export async function GET(request: Request) {
@@ -49,6 +50,15 @@ export async function POST(request: Request) {
       { value },
       { new: true, upsert: true }
     ).lean();
+
+    logAudit(session, {
+      action: "update",
+      entity: "store-setting",
+      entityId: setting?._id ? String(setting._id) : undefined,
+      entityLabel: key,
+      summary: `Set setting key: ${key}`,
+      changes: { key, value },
+    });
 
     return NextResponse.json({ data: setting });
   } catch (error: any) {

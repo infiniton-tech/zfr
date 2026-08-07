@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { auth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 import { Look } from "@/models";
 
 export async function GET(request: Request) {
@@ -36,6 +37,13 @@ export async function POST(request: Request) {
     }
 
     const look = await Look.create({ image, userName, caption, instagramHandle, isFeatured: isFeatured ?? false, approved: true });
+    logAudit(session, {
+      action: "create",
+      entity: "look",
+      entityId: String(look._id),
+      entityLabel: look.userName || look.caption,
+      summary: "Created look",
+    });
     return NextResponse.json({ data: look }, { status: 201 });
   } catch {
     return NextResponse.json({ error: { code: "INTERNAL_ERROR", message: "Failed to create look" } }, { status: 500 });

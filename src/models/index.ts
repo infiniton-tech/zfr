@@ -10,4 +10,5 @@ export { Review } from "./Review";
 export { TrackingEvent } from "./TrackingEvent";
 export { TrendingItem } from "./TrendingItem";
 export { StoreSetting } from "./StoreSetting";
+export { AuditLog } from "./AuditLog";
 

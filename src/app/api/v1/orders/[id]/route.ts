@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { Order, Product } from "@/models";
 import { auth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 
 export async function PATCH(
   request: Request,
@@ -53,6 +54,22 @@ export async function PATCH(
       { $set: updateFields },
       { new: true }
     ).populate("userId", "name email").lean();
+
+    const transitions: string[] = [];
+    if (status && status !== existing.status) {
+      transitions.push(`status: ${existing.status} → ${status}`);
+    }
+    if (paymentStatus && paymentStatus !== existing.paymentStatus) {
+      transitions.push(`paymentStatus: ${existing.paymentStatus} → ${paymentStatus}`);
+    }
+    logAudit(session, {
+      action: "update",
+      entity: "order",
+      entityId: String(order?._id ?? existing._id),
+      entityLabel: existing.orderNumber,
+      summary: transitions.length > 0 ? transitions.join("; ") : "Updated order",
+      changes: body,
+    });
 
     return NextResponse.json({ data: order });
   } catch (error) {

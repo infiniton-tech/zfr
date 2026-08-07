@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { auth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 import { HeroSection } from "@/models";
 
 export async function GET(request: Request) {
@@ -29,6 +30,13 @@ export async function POST(request: Request) {
     await connectDB();
     const body = await request.json();
     const section = await HeroSection.create(body);
+    logAudit(session, {
+      action: "create",
+      entity: "hero-section",
+      entityId: String(section._id),
+      entityLabel: section.title,
+      summary: "Created hero section",
+    });
     return NextResponse.json({ data: section }, { status: 201 });
   } catch (error) {
     console.error("POST Hero Sections error:", error);
